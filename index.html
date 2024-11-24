@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legenda</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Section principale avec un conteneur centré -->
+    <div class="container">
+        <!-- Header avec navigation sticky -->
+        <header>
+            <div class="logo">
+                <h1>Legenda</h1>
+            </div>
+            <nav>
+                <ul>
+                   <!-- <li><a href="projet1.html">Projet 1</a></li> -->
+                   <!-- <li><a href="projet2.html">Projet 2</a></li> --> 
+                    <li><a href="https://discord.gg/YAqm9VmKGH">Discord</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <!-- Section principale du contenu -->
+        <section class="main-section">
+            <div class="countdown-container">
+                <h2 id="countdown"></h2>
+            </div>
+            <!--<h2>Bienvenue sur Mon Site Personnel</h2>
+            <p>Découvrez mes projets, mes idées et tout ce que j'ai créé. Cliquez sur les liens ci-dessus pour en savoir plus !</p>
+            <div class="btn-container">
+                <a href="../index.html" class="btn">Black Ops 6 Zombies</a>-->
+                <!-- <a href="projet2.html" class="btn">Voir Projet 2</a> -->
+            </div>
+        </section>
+
+        <!-- Footer 
+        <footer>
+            <p>© 2024 Legenda - Tous droits réservés</p>
+        </footer>-->
+    </div>
+    <script>
+        // Date cible pour le compte à rebours (exemple : 5 décembre 2024)
+const targetDate = new Date("Dec 5, 2024 00:00:00").getTime();
+
+// Fonction pour mettre à jour le compte à rebours
+function updateCountdown() {
+    const now = new Date().getTime();
+    const distance = targetDate - now;
+
+    // Calcul des jours, heures, minutes et secondes restantes
+    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+    // Affichage du compte à rebours dans le format "Jours : Heures : Minutes : Secondes"
+    document.getElementById("countdown").innerHTML = `${days} ${hours} ${minutes} ${seconds}`;
+
+    // Si le compte à rebours a terminé, afficher un message
+    if (distance < 0) {
+        document.getElementById("countdown").innerHTML = "Le compte à rebours est terminé !";
+    }
+}
+
+// Mettre à jour le compte à rebours toutes les secondes
+setInterval(updateCountdown, 1000);
+    </script>
+
+</body>
+</html>
