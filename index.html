@@ -58,7 +58,7 @@ function updateCountdown() {
     const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
     // Affichage du compte à rebours dans le format "Jours : Heures : Minutes : Secondes"
-    document.getElementById("countdown").innerHTML = `${days} ${hours} ${minutes} ${seconds}`;
+    document.getElementById("countdown").innerHTML = `${hours} ${minutes} ${seconds}`;
 
     // Si le compte à rebours a terminé, afficher un message
     if (distance < 0) {
