@@ -45,7 +45,7 @@
     </div>
     <script>
         // Date cible pour le compte à rebours (exemple : 5 décembre 2024)
-const targetDate = new Date("Dec 15, 2024 00:00:00").getTime();
+const targetDate = new Date("Dec 15, 2024 21:00:00").getTime();
 
 // Fonction pour mettre à jour le compte à rebours
 function updateCountdown() {
@@ -53,7 +53,6 @@ function updateCountdown() {
     const distance = targetDate - now;
 
     // Calcul des jours, heures, minutes et secondes restantes
-    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
     const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((distance % (1000 * 60)) / 1000);
@@ -63,7 +62,7 @@ function updateCountdown() {
 
     // Si le compte à rebours a terminé, afficher un message
     if (distance < 0) {
-        document.getElementById("countdown").innerHTML = "Le compte à rebours est terminé !";
+        document.getElementById("countdown").innerHTML = "Veuillez rafraîchir la page !";
     }
 }
 
