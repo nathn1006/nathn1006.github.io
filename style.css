@@ -1,187 +1,161 @@
-/* Réinitialisation des marges et paddings par défaut */
-* {
+/* Appliquer un style global pour le fond noir et texte orange */
+html, body {
+    height: 100%; /* S'assure que le body occupe toute la hauteur de la page */
+    margin: 0; /* Enlève les marges par défaut */
+    padding: 0; /* Enlève les paddings par défaut */
+    font-family: 'Arial', sans-serif; /* Police générale */
+    background-color: #111; /* Fond noir */
+    color: #FF6600; /* Texte orange */
+    display: flex;
+    flex-direction: column; /* Permet d'utiliser flexbox pour gérer l'alignement */
+}
+
+/* Le contenu principal occupe tout l'espace disponible */
+main {
+    flex: 1; /* Le contenu prend tout l'espace disponible */
+}
+
+/* Header de la page */
+header {
+    background-color: #111;
+    padding: 15px;
+    text-align: center;
+}
+
+header .navbar ul {
+    list-style-type: none;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
 }
 
-/* Définir la police principale */
-body {
-    font-family: 'Roboto', sans-serif;
-    background-color: #1E1E1E;  /* Fond sombre pour un effet moderne */
-    color: #F2F2F2;  /* Texte clair pour le contraste */
-    line-height: 1.6;
-    height: 100vh;  /* Utilise toute la hauteur de la fenêtre */
-    display: flex;
-    justify-content: center;
-    align-items: center;
+header .navbar ul li {
+    display: inline;
+    margin-right: 15px;
 }
 
-/* Container centré avec bordure */
-.container {
-    background-color: #fff;  /* Fond blanc */
-    border-radius: 15px;  /* Bordures arrondies */
-    width: 90%;
-    max-width: 1000px;  /* Limiter la taille maximale */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);  /* Ombre portée pour l'effet 3D */
-    padding: 30px;
-    text-align: center;
-}
-
-/* Header avec navigation sticky */
-header {
-    margin-bottom: 40px;  /* Espacement entre le header et le contenu */
-}
-
-header .logo h1 {
-    font-family: 'Poppins', sans-serif;
-    font-size: 32px;
-    color: #FF6600;  /* Une touche d'orange pour la marque */
-    margin-bottom: 20px;
-}
-
-nav ul {
-    list-style-type: none;
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-}
-
-nav ul li {
-    display: inline-block;
-}
-
-nav ul li a {
+header .navbar ul li a {
+    color: #FF6600; /* Liens en orange */
     text-decoration: none;
     font-size: 18px;
-    color: #333;  /* Couleur sombre pour les liens */
-    padding: 12px 24px;
-    border-radius: 5px;
-    transition: background-color 0.3s, transform 0.3s;
+    font-weight: bold;
 }
 
-nav ul li a:hover {
-    background-color: #FF6600;  /* Orange clair au survol */
-    color: #fff;
-    transform: scale(1.05);  /* Effet de zoom sur le lien */
+header .navbar ul li a:hover,
+header .navbar ul li a.active {
+    color: #FFF; /* Liens actifs ou au survol deviennent blancs */
 }
 
-/* Section principale */
-.main-section {
-    margin-bottom: 40px;
+/* Footer toujours en bas */
+footer {
+    background-color: #111;
+    color: #FF6600; /* Texte orange */
+    padding: 10px;
+    text-align: center;
+    font-size: 14px;
+    width: 100%; /* Le footer prend toute la largeur */
+    position: relative;
+    bottom: 0;
+    margin-top: auto; /* Le footer se place en bas */
 }
 
-.main-section h2 {
+/* Mise en forme des sections contenant des messages ou du contenu */
+section {
+    padding: 20px;
+}
+
+/* Style pour le contenu spécifique de chaque carte */
+.citadelle-message, .home, .secrets, .secret, .arme {
+    background-color: #111; /* Fond noir pour chaque section */
+    color: #FF6600; /* Texte orange pour chaque section */
+    text-align: center;
+    padding: 40px 20px;
+    margin-top: 20px;
+}
+
+.citadelle-message h1, .secrets h2, .secret h3, .arme h2 {
     font-size: 36px;
     margin-bottom: 20px;
-    font-family: 'Poppins', sans-serif;
-    color: #111;
+    font-family: 'Arial', sans-serif;
 }
 
-.main-section p {
-    font-size: 20px;
-    margin-bottom: 40px;
-    color: #111;
+.citadelle-message p, .secrets p, .secret p, .arme p {
+    font-size: 24px;
+    font-family: 'Arial', sans-serif;
 }
 
-/* Conteneur des boutons */
-.btn-container {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
+.citadelle-message img, .arme img {
+    width: 80%; /* Les images s'adaptent à la largeur de la section */
+    margin-top: 20px;
+    border: 2px solid #FF6600; /* Bordure orange autour des images */
 }
-
-.btn {
+.secret img {
+    width: 50%;
+    margin-top: 20px;
+    border: 2px solid #FF6600;
+}
+/* Button styling */
+button.btn {
     background-color: #FF6600;
-    color: white;
-    padding: 15px 30px;
+    color: #111;
+    padding: 10px 20px;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 10px;
     border-radius: 5px;
+}
+
+button.btn:hover {
+    background-color: #e65c00; /* Légère modification de l'orange au survol */
+    color: white;
+}
+
+/* Style pour les sous-menus */
+.submenu a {
+    display: block;
+    padding: 10px;
+    color: #FF6600;
     text-decoration: none;
     font-size: 18px;
-    transition: background-color 0.3s, transform 0.3s;
-}
-
-.btn:hover {
-    background-color: #FF8000;
-    transform: scale(1.05);
-}
-
-/* Footer */
-footer {
     text-align: center;
-    background-color: #111;
-    color: #aaa;
-    padding: 20px 0;
-    font-size: 14px;
 }
 
-footer p {
-    margin: 0;
+.submenu a:hover {
+    background-color: #FF6600;
+    color: white;
+}
+.contentSection {
+    display: none; /* Cacher toutes les sections de contenu au début */
 }
 
-/* Mobile Responsive Design */
-@media (max-width: 768px) {
-    .container {
-        width: 95%;  /* Réduire la largeur du conteneur pour les petits écrans */
-    }
-
-    header .logo h1 {
-        font-size: 28px;
-    }
-
-    nav ul {
-        flex-direction: column;
-    }
-
-    nav ul li {
-        margin-bottom: 10px;
-    }
-
-    .main-section h2 {
-        font-size: 28px;
-    }
-
-    .main-section p {
-        font-size: 18px;
-    }
-
-    .btn {
-        padding: 12px 24px;
-    }
+/* Classe pour cacher les boutons de secret et d'arme spécial */
+.hidden {
+    display: none;
 }
-/* Mobile Responsive Design */
-@media (max-width: 768px) {
-    .container {
-        width: 95%;  /* Réduire la largeur du conteneur pour les petits écrans */
-    }
 
-    header .logo h1 {
-        font-size: 28px;
-    }
-
-    #countdown {
-        font-size: 40px;
-    }
+/* Styles pour les boutons */
+button {
+    background-color: #FF6600;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin: 10px;
+    transition: background-color 0.3s ease;
 }
-.countdown-container {
-    background-color: #000;  /* Fond sombre pour la zone du compte à rebours */
-    padding: 20px;
+
+button:hover {
+    background-color: #cc5200;
+}
+.content {
+    background-color: #141414;
     border-radius: 10px;
-    color: #FF6600;  /* Couleur orange pour le texte */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);  /* Ombre portée pour l'effet 3D */
-}
-
-#countdown {
-    font-size: 50px;  /* Taille du texte du compte à rebours */
-    font-family: 'Poppins', sans-serif;
-    color: #FF6600;
-    font-weight: bold;
-    letter-spacing: 3px;
-    animation: countdownAnimation 1s ease-in-out infinite;  /* Animation de clignotement */
-}
-
-@keyframes countdownAnimation {
-    0% { color: #FF6600; }
-    50% { color: #F2F2F2; }
-    100% { color: #FF6600; }
+    padding: 30px;
+    margin: 20px auto;
+    max-width: 500px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+    text-align: center;
 }
