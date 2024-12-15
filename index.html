@@ -53,12 +53,11 @@ function updateCountdown() {
     const distance = targetDate - now;
 
     // Calcul des jours, heures, minutes et secondes restantes
-    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
     // Affichage du compte à rebours dans le format "Jours : Heures : Minutes : Secondes"
-    document.getElementById("countdown").innerHTML = `${hours} ${minutes} ${seconds}`;
+    document.getElementById("countdown").innerHTML = `${minutes} ${seconds}`;
 
     // Si le compte à rebours a terminé, afficher un message
     if (distance < 0) {
