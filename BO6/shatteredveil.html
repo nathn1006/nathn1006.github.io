@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shattered Veil</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Ajout animation scroll */
+        .scroll-animate {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 1s ease-out;
+        }
+
+        .scroll-animate.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #artefact-img {
+            width: 250px; /* Taille réduite de l'artéfact au départ */
+            margin-bottom: 20px;
+            transition: width 1s ease-out; /* Transition douce pour l'agrandir */
+        }
+
+        .artefact-section {
+            text-align: center;
+            padding: 30px 20px;
+            background-color: rgba(255, 255, 255, 0.02);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .artefact-section img {
+            width: 600px;
+            margin-bottom: 20px;
+        }
+
+        .artefact-section h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .artefact-section p {
+            max-width: 700px;
+            margin: 0 auto;
+            font-size: 1.1em;
+            line-height: 1.6em;
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER NAVIGATION -->
+    <header>
+        <nav class="navbar">
+            <ul>
+                <li><a href="index.html">Accueil</a></li>
+                <li><a href="terminus.html">Terminus</a></li>
+                <li><a href="libertyfalls.html">Liberty Falls</a></li>
+                <li><a href="CDM.html">Citadelle Des Morts</a></li>
+                <li><a href="thetomb.html">The Tomb</a></li>
+                <li><a href="shatteredveil.html" class="active">Shattered Veil</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- SECTION ARTEFACT -->
+    <section class="artefact-section">
+        <div class="scroll-animate" id="artefact-text">
+            <img src="./img/Artefact.webp" alt="Artefact Sentinelle" class="scroll-animate" id="artefact-img" />
+            <h2>Shattered Veil</h2>
+            <p>
+                Un manoir au passé diabolique, pris dans l'apocalypse des Appalaches. Libérez ses âmes captives . Affrontez un esprit synthétique . Affrontez un tyran .
+            </p>
+        </div>
+
+            <div class="secret">
+                <h2>Pour commencer :</h2>
+                <p>Rendez vous à "Chambre de l'ordinateur central" atteingnez la manche 10, un zombie avec les yeux violet apparaitra.</p>
+                <p>Tuez le et ramassez la disquette au sol.</p>
+                <p>Rendez vous maintenant au "Vestibule Est" juste en face de Stamin UP</p>
+                <p>intéragissez avec l'ordinateur qui a un écrant vert un papier commencera a sortir du fax.</p>
+                <a>attention des vermines apparaitrons</a>
+                <p>une fois les vermines tuez intéragissez avec le papier qui et sortie du fax, il vous donnera un mots en majuscule :</p>
+                <p>    -CRAB</p>
+                <p>    -MOTH</p>
+                <p>    -WORM</p>
+                <p>    -YETI</p>
+                <P>maintenant rendez vous a la chambre d'enfant a droite de PHD flopper il y a un tableau, avec celui-ci vous devez déchiffrez le mots en nombre.</P>
+                <p>pour vous facilitez la tache, voici toute les combinaison avec tout les tableau :</p>
+                <H2>Tableau avec les lettre "OUY" en bas a droite :</H2>
+                <img src="./img/liberty/pose.jpg" alt="">
+                <p>CRAB: 9729</p>
+                <p>MOTH: 7394</p>
+                <p>WORM: 9377</p>
+                <p>YETI: 3192</p>
+                <H2>Tableau avec la lettre "M" en bas a droite :</H2>
+                <img src="./img/liberty/pose.jpg" alt="">
+                <p>CRAB: 5775</p>
+                <p>MOTH: 1676</p>
+                <p>WORM: 7671</p>
+                <p>YETI: 3576</p>
+                <H2>Tableau avec la lettre "NI" en bas a droite :</H2>
+                <img src="./img/ShatteredVeil/Tableau/tableauNI.png" alt="Zone Temporelle Terminus">
+                <p>CRAB: 4664</p>
+                <p>MOTH: 1888</p>
+                <p>WORM: 5861</p>
+                <p>YETI: 5482</p>
+                <H2>Tableau avec la lettre "S" en bas a droite :</H2>
+                <img src="./img/liberty/pose.jpg" alt="Zone Temporelle Terminus">
+                <p>CRAB: 7857</p>
+                <p>MOTH: 8587</p>
+                <p>WORM: 8588</p>
+                <p>YETI: 5785</p>
+                <p>Maintenant que vous avez le code, utilisez le clavier à côté du Doppelghast situé à l’étage inférieur pour entrer votre code.</p>
+                <p>Tuez ensuite le Doppelghast pour obtenir un <strong>bras sectionné.</strong></p>
+                <p>Apportez le bras sectionné au scanner ADN dans l’Armuerie.</p>
+                <h2>Vous avez maintenant en votre possesion le <strong>Pistolet-laser Mark II</strong></h2>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>&copy; 2025 Aide Zombies - Tous droits réservés</p>
+    </footer>
+
+    <!-- SCRIPT ANIMATION SCROLL -->
+    <script>
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        });
+
+        document.querySelectorAll('.scroll-animate').forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>

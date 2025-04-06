@@ -1,0 +1,161 @@
+/* Appliquer un style global pour le fond noir et texte orange */
+html, body {
+    height: 100%; /* S'assure que le body occupe toute la hauteur de la page */
+    margin: 0; /* Enlève les marges par défaut */
+    padding: 0; /* Enlève les paddings par défaut */
+    font-family: 'Arial', sans-serif; /* Police générale */
+    background-color: #111; /* Fond noir */
+    color: #FF6600; /* Texte orange */
+    display: flex;
+    flex-direction: column; /* Permet d'utiliser flexbox pour gérer l'alignement */
+}
+
+/* Le contenu principal occupe tout l'espace disponible */
+main {
+    flex: 1; /* Le contenu prend tout l'espace disponible */
+}
+
+/* Header de la page */
+header {
+    background-color: #111;
+    padding: 15px;
+    text-align: center;
+}
+
+header .navbar ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+header .navbar ul li {
+    display: inline;
+    margin-right: 15px;
+}
+
+header .navbar ul li a {
+    color: #FF6600; /* Liens en orange */
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+header .navbar ul li a:hover,
+header .navbar ul li a.active {
+    color: #FFF; /* Liens actifs ou au survol deviennent blancs */
+}
+
+/* Footer toujours en bas */
+footer {
+    background-color: #111;
+    color: #FF6600; /* Texte orange */
+    padding: 10px;
+    text-align: center;
+    font-size: 14px;
+    width: 100%; /* Le footer prend toute la largeur */
+    position: relative;
+    bottom: 0;
+    margin-top: auto; /* Le footer se place en bas */
+}
+
+/* Mise en forme des sections contenant des messages ou du contenu */
+section {
+    padding: 20px;
+}
+
+/* Style pour le contenu spécifique de chaque carte */
+.citadelle-message, .home, .secrets, .secret, .arme {
+    background-color: #111; /* Fond noir pour chaque section */
+    color: #FF6600; /* Texte orange pour chaque section */
+    text-align: center;
+    padding: 40px 20px;
+    margin-top: 20px;
+}
+
+.citadelle-message h1, .secrets h2, .secret h3, .arme h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+    font-family: 'Arial', sans-serif;
+}
+
+.citadelle-message p, .secrets p, .secret p, .arme p {
+    font-size: 24px;
+    font-family: 'Arial', sans-serif;
+}
+
+.citadelle-message img, .arme img {
+    width: 80%; /* Les images s'adaptent à la largeur de la section */
+    margin-top: 20px;
+    border: 2px solid #FF6600; /* Bordure orange autour des images */
+}
+.secret img {
+    width: 50%;
+    margin-top: 20px;
+    border: 2px solid #FF6600;
+}
+/* Button styling */
+button.btn {
+    background-color: #FF6600;
+    color: #111;
+    padding: 10px 20px;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 10px;
+    border-radius: 5px;
+}
+
+button.btn:hover {
+    background-color: #e65c00; /* Légère modification de l'orange au survol */
+    color: white;
+}
+
+/* Style pour les sous-menus */
+.submenu a {
+    display: block;
+    padding: 10px;
+    color: #FF6600;
+    text-decoration: none;
+    font-size: 18px;
+    text-align: center;
+}
+
+.submenu a:hover {
+    background-color: #FF6600;
+    color: white;
+}
+.contentSection {
+    display: none; /* Cacher toutes les sections de contenu au début */
+}
+
+/* Classe pour cacher les boutons de secret et d'arme spécial */
+.hidden {
+    display: none;
+}
+
+/* Styles pour les boutons */
+button {
+    background-color: #FF6600;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin: 10px;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #cc5200;
+}
+.content {
+    background-color: #141414;
+    border-radius: 10px;
+    padding: 30px;
+    margin: 20px auto;
+    max-width: 500px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
