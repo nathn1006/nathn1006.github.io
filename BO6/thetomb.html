@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Tomb</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Ajout animation scroll */
+        .scroll-animate {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 1s ease-out;
+        }
+
+        .scroll-animate.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #artefact-img {
+            width: 250px; /* Taille réduite de l'artéfact au départ */
+            margin-bottom: 20px;
+            transition: width 1s ease-out; /* Transition douce pour l'agrandir */
+        }
+
+        .artefact-section {
+            text-align: center;
+            padding: 30px 20px;
+            background-color: rgba(255, 255, 255, 0.02);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .artefact-section img {
+            width: 600px;
+            margin-bottom: 20px;
+        }
+
+        .artefact-section h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .artefact-section p {
+            max-width: 700px;
+            margin: 0 auto;
+            font-size: 1.1em;
+            line-height: 1.6em;
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER NAVIGATION -->
+    <header>
+        <nav class="navbar">
+            <ul>
+                <li><a href="index.html">Accueil</a></li>
+                <li><a href="libertyfalls.html">Liberty Falls</a></li>
+                <li><a href="CDM.html">Citadelle Des Morts</a></li>
+                <li><a href="thetomb.html" class="active">The Tomb</a></li>
+                <li><a href="shatteredveil.html">Shattered Veil</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- SECTION ARTEFACT -->
+    <section class="artefact-section">
+        <div class="scroll-animate" id="artefact-text">
+            <img src="./img/iceBaton.webp" alt="Artefact Sentinelle" class="scroll-animate" id="artefact-img" />
+            <h2>The Tomb</h2>
+            <p>
+                Au coeur des catacombes maudites se trouve l'entrée vers un monde obscur. Suivez les traces d'un explorateur au destin funeste. Relevez les épreuves des damnés et mettez la main sur le légendaire Artéfact Sentinelle
+            </p>
+        </div>
+
+        <div class="secret">
+            <h2>Prochainement..</h2>
+            
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>&copy; 2025 Aide Zombies - Tous droits réservés</p>
+    </footer>
+
+    <!-- SCRIPT ANIMATION SCROLL -->
+    <script>
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        });
+
+        document.querySelectorAll('.scroll-animate').forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>
