@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legenda</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1E1E1E;
+            color: #F2F2F2;
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background-color: #fff;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 1000px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        header .logo h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 32px;
+            color: #FF6600;
+            margin-bottom: 20px;
+        }
+
+        nav ul {
+            list-style-type: none;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        nav ul li {
+            display: inline-block;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            font-size: 18px;
+            color: #333;
+            padding: 12px 24px;
+            border-radius: 5px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        nav ul li a:hover {
+            background-color: #FF6600;
+            color: #fff;
+            transform: scale(1.05);
+        }
+
+        .main-section {
+            text-align: center;
+        }
+
+        .twitch-video {
+            width: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 40px;
+        }
+
+        footer {
+            text-align: center;
+            background-color: #111;
+            color: #aaa;
+            padding: 20px 0;
+            font-size: 14px;
+        }
+
+        footer p {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <h1>Legenda</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="https://discord.gg/YAqm9VmKGH">Retour</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <section class="main-section">
+            <div class="twitch-video">
+                <iframe
+                    src="https://player.twitch.tv/?channel=nathn1006&parent=https://nathn1006.github.io/"
+                    height="480"
+                    width="100%"
+                    frameborder="0"
+                    allowfullscreen="true">
+                </iframe>
+            </div>
+        </section>
+
+        <footer>
+            <p>© 2025 Legenda - Tous droits réservés</p>
+        </footer>
+    </div>
+</body>
+</html>
