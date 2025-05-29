@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeu de mémoire - Legenda</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #ff5f6d, #ffc371);
+            color: #fff;
+            flex-direction: column;
+            text-align: center;
+        }
+        .circle {
+            width: 100px;
+            height: 100px;
+            margin: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            cursor: pointer;
+        }
+        .red { background-color: #e74c3c; }
+        .blue { background-color: #3498db; }
+        .green { background-color: #2ecc71; }
+        .yellow { background-color: #f1c40f; }
+        #status {
+            font-size: 1.2rem;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Jeu de mémoire visuelle</h1>
+    <p>Répétez la séquence de couleurs dans le bon ordre !</p>
+    <div id="gameArea">
+        <div class="circle red"></div>
+        <div class="circle blue"></div>
+        <div class="circle green"></div>
+        <div class="circle yellow"></div>
+    </div>
+    <div id="status">Cliquez pour commencer !</div>
+
+    <script>
+        const colors = ['red', 'blue', 'green', 'yellow'];
+        const circles = document.querySelectorAll('.circle');
+        const status = document.getElementById('status');
+        let sequence = [];
+        let playerSequence = [];
+        let level = 0;
+
+        function flashColor(color) {
+            const element = document.querySelector(`.${color}`);
+            element.style.opacity = '0.5';
+            setTimeout(() => element.style.opacity = '1', 500);
+        }
+
+        function nextSequence() {
+            playerSequence = [];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            sequence.push(randomColor);
+            status.textContent = `Niveau ${level + 1}`;
+            let i = 0;
+
+            const interval = setInterval(() => {
+                if (i < sequence.length) {
+                    flashColor(sequence[i]);
+                    i++;
+                } else {
+                    clearInterval(interval);
+                }
+            }, 800);
+
+            level++;
+        }
+
+        function checkSequence() {
+            for (let i = 0; i < playerSequence.length; i++) {
+                if (playerSequence[i] !== sequence[i]) {
+                    status.textContent = 'Perdu ! Cliquez pour rejouer.';
+                    sequence = [];
+                    level = 0;
+                    return;
+                }
+            }
+            if (playerSequence.length === sequence.length) {
+                setTimeout(nextSequence, 1000);
+            }
+        }
+
+        circles.forEach(circle => {
+            circle.addEventListener('click', () => {
+                const color = circle.classList[1];
+                playerSequence.push(color);
+                flashColor(color);
+                checkSequence();
+            });
+        });
+
+        status.addEventListener('click', nextSequence);
+    </script>
+</body>
+</html>
