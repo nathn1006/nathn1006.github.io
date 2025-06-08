@@ -119,14 +119,7 @@
   function loadFirebaseReservations() {
     const container = document.getElementById("pending");
     container.innerHTML = "Chargement...";
-    db.ref("reservations").once("value", snapshot => {
-      .then(snapshot => {
-  console.log("Données Firebase:", snapshot.val());
-  // ...
-})
-                                db.ref("reservations").on("value", () => {
-  loadFirebaseReservations();
-});
+    db.ref("reservations").once("value").then(snapshot => {
       const data = snapshot.val();
       container.innerHTML = data ? "" : "<p>Aucune demande.</p>";
       if (!data) return;
@@ -142,31 +135,14 @@
           <div class="info">Twitter: ${r.twitter || "-"}</div>
           <div class="info">Instagram: ${r.instagram || "-"}</div>
           <div class="info">Soumis le ${new Date(r.submittedAt).toLocaleString()}</div>
-          <div class="actions">
-            <button class="approve" onclick="approveReservation('${key}')">✅ Valider</button>
-            <button class="reject" onclick="rejectReservation('${key}')">❌ Refuser</button>
-          </div>
         `;
         container.appendChild(div);
       });
+    }).catch(error => {
+      container.innerHTML = `<p style="color:red;">Erreur de chargement : ${error.message}</p>`;
+      console.error("Erreur Firebase:", error);
     });
   }
-
-  function approveReservation(id) {
-    db.ref("approved/" + id).set({ ...tempData[id], status: "approuvé", validatedAt: new Date().toISOString() });
-    db.ref("reservations/" + id).remove().then(loadAll);
-  }
-
-  function rejectReservation(id) {
-    db.ref("rejected/" + id).set({ ...tempData[id], status: "refusé", validatedAt: new Date().toISOString() });
-    db.ref("reservations/" + id).remove().then(loadAll);
-  }
-
-  let tempData = {};
-  db.ref("reservations").on("value", snapshot => {
-    tempData = snapshot.val() || {};
-    loadFirebaseReservations();
-  });
 
   function exportHistory() {
     const blob = new Blob([document.getElementById("pending").innerText], { type: "text/plain" });
@@ -177,6 +153,8 @@
     a.click();
     URL.revokeObjectURL(url);
   }
+
+  loadAll();
 </script>
 </body>
 </html>
