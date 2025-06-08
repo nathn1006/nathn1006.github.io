@@ -57,7 +57,24 @@
       border-radius: 5px;
       font-size: 1rem;
     }
+    .back-btn {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: #222;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+  z-index: 100;
+  box-shadow: 0 0 5px #000;
+}
 
+.back-btn:hover {
+  background: #444;
+}
     textarea {
       resize: vertical;
     }
@@ -96,7 +113,7 @@
   </style>
 </head>
 <body>
-
+<button onclick="window.location.href='index.html'" class="back-btn">⬅️ Retour</button>
 <script>
   const reservation = JSON.parse(localStorage.getItem("approvedReservation"));
   if (reservation) {
