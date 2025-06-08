@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>L'Histoire de Fortnite</title>
+  <style>
+    body { margin: 0; overflow: hidden; font-family: 'Burbank Big Condensed', sans-serif; }
+    canvas { display: block; }
+
+    #overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      text-align: center;
+      z-index: 1;
+      font-family: 'Burbank Big Condensed', sans-serif;
+      transition: opacity 0.5s ease;
+    }
+
+    #title {
+      font-size: 3em;
+      text-shadow: 2px 2px 10px #00ffff;
+    }
+
+    #countdown {
+      margin-top: 2rem;
+      font-size: 2.5em;
+      padding: 1rem 2rem;
+      background: rgba(0, 0, 0, 0.4);
+      border: 2px solid #7700ff;
+      border-radius: 1rem;
+      text-shadow: 0 0 8px #00ffff, 0 0 20px #7700ff;
+      box-shadow: 0 0 15px #7700ff;
+      animation: pulse 2s infinite;
+      transition: all 0.3s ease;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); box-shadow: 0 0 15px #7700ff; }
+      50% { transform: scale(1.03); box-shadow: 0 0 25px #aa00ff; }
+      100% { transform: scale(1); box-shadow: 0 0 15px #7700ff; }
+    }
+
+    #flash {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: white;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 9999;
+      transition: opacity 0.3s ease;
+    }
+  </style>
+  <link href="https://fonts.cdnfonts.com/css/burbank-big-condensed" rel="stylesheet">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js",
+        "three/examples/jsm/controls/OrbitControls.js": "https://cdn.jsdelivr.net/npm/three@0.158.0/examples/jsm/controls/OrbitControls.js",
+        "three/examples/jsm/loaders/GLTFLoader.js": "https://cdn.jsdelivr.net/npm/three@0.158.0/examples/jsm/loaders/GLTFLoader.js"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="overlay">
+    <div id="title">L'Histoire de Fortnite</div>
+    <div id="countdown"></div>
+  </div>
+  <div id="flash"></div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+    import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 10;
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+
+    const particleCount = 2000;
+    const particleGeometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+
+    for (let i = 0; i < particleCount; i++) {
+      const phi = Math.random() * 2 * Math.PI;
+      const theta = Math.acos(2 * Math.random() - 1);
+      const radius = 4 + Math.random() * 0.5;
+      positions[i * 3] = radius * Math.sin(theta) * Math.cos(phi);
+      positions[i * 3 + 1] = radius * Math.sin(theta) * Math.sin(phi);
+      positions[i * 3 + 2] = radius * Math.cos(theta);
+    }
+
+    particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const particleMaterial = new THREE.PointsMaterial({ color: 0x66ccff, size: 0.05 });
+    const particles = new THREE.Points(particleGeometry, particleMaterial);
+    scene.add(particles);
+
+    scene.add(new THREE.AmbientLight(0x404040));
+    scene.add(new THREE.PointLight(0xffffff, 1.5, 50));
+
+    const floatingObjects = [];
+    for (let i = 0; i < 10; i++) {
+      const geom = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+      const mat = new THREE.MeshStandardMaterial({ color: new THREE.Color(`hsl(${Math.random() * 360}, 100%, 60%)`) });
+      const mesh = new THREE.Mesh(geom, mat);
+      mesh.position.set((Math.random() - 0.5) * 20, (Math.random() - 0.5) * 10, (Math.random() - 0.5) * 20);
+      scene.add(mesh);
+      floatingObjects.push(mesh);
+    }
+
+    const animatedModels = [];
+    const modelURLs = [
+      'https://raw.githubusercontent.com/nathn1006/nathn1006.github.io/main/model/vaisseau.glb',
+      'https://raw.githubusercontent.com/nathn1006/nathn1006.github.io/main/model/fortnite_-_the_visitor.glb',
+      'https://raw.githubusercontent.com/nathn1006/nathn1006.github.io/main/model/fortnite__chug_jug_legendary.glb',
+      'https://raw.githubusercontent.com/nathn1006/nathn1006.github.io/main/model/zero_point_fragment_-_fortnite_remix_the_finale.glb',
+      'https://raw.githubusercontent.com/nathn1006/nathn1006.github.io/main/model/scar_-_fortnite_gun.glb',
+      'https://raw.githubusercontent.com/nathn1006/nathn1006.github.io/main/model/i.o._bomb.glb',
+      'https://raw.githubusercontent.com/nathn1006/nathn1006.github.io/main/model/fortnite_biplane.glb',
+      'https://raw.githubusercontent.com/nathn1006/nathn1006.github.io/main/model/kevin_the_cube.glb'
+    ];
+
+    const modelsToLoad = modelURLs.map(url => ({
+      url,
+      position: [(Math.random() - 0.5) * 10, (Math.random() - 0.5) *23, (Math.random() - 0.5) * 30],
+      scale: Math.random() * 0.5 + 0.3
+    }));
+
+    const gltfLoader = new GLTFLoader();
+    modelsToLoad.forEach(modelInfo => {
+      gltfLoader.load(modelInfo.url, gltf => {
+        const model = gltf.scene;
+        model.scale.set(modelInfo.scale, modelInfo.scale, modelInfo.scale);
+        model.position.set(modelInfo.position[1], modelInfo.position[2] - 25, modelInfo.position[9]);
+        scene.add(model);
+
+          animatedModels.push({
+            mesh: model,
+            rotationSpeed: { x: Math.random() * 0.01, y: Math.random() * 0.01 },
+            floatSpeed: Math.random() * 0.002 + 0.001,
+            baseY: model.position.y + 25,
+            offset: Math.random() * Math.PI * 2,
+            special: false
+          });
+      });
+    });
+
+    function animate(time) {
+      requestAnimationFrame(animate);
+      particles.rotation.y += 0.001;
+
+      floatingObjects.forEach(obj => {
+        obj.rotation.y += 0.005;
+        obj.rotation.x += 0.003;
+        obj.position.y += Math.sin(Date.now() * 0.001 + obj.position.x) * 0.001;
+      });
+
+      const t = Date.now() * 0.001;
+      animatedModels.forEach(obj => {
+        if (obj.special) {
+          obj.mesh.rotation.y += 0.002;
+          obj.mesh.position.addScaledVector(obj.floatDirection, obj.speed);
+          if (obj.mesh.position.z < -30) {
+            obj.mesh.position.set((Math.random() - 0.5) * 30, 60, 30);
+          }
+        } else {
+          obj.mesh.rotation.y += obj.rotationSpeed.y;
+          obj.mesh.rotation.x += obj.rotationSpeed.x;
+          obj.mesh.position.y = obj.baseY + Math.sin(t + obj.offset) * 0.5;
+        }
+      });
+
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    const countdownElement = document.getElementById('countdown');
+    const targetDate = new Date("2025-06-08T18:30:00");
+    let explode = false;
+
+    function updateCountdown() {
+      const now = new Date();
+      const diff = targetDate - now;
+
+      if (diff <= 0 && !explode) {
+        countdownElement.textContent = "Lancement...";
+        explode = true;
+        document.getElementById('flash').style.opacity = '1';
+        setTimeout(() => document.getElementById('flash').style.opacity = '0', 300);
+        document.getElementById('overlay').style.opacity = '0';
+        const pos = particles.geometry.attributes.position.array;
+        for (let i = 0; i < pos.length; i++) {
+          pos[i] *= 2 + Math.random();
+        }
+        particles.geometry.attributes.position.needsUpdate = true;
+        return;
+      }
+
+      if (!explode) {
+        const totalSeconds = Math.floor(diff / 1000);
+        const days = Math.floor(totalSeconds / (3600 * 24));
+        const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        countdownElement.textContent = `${days}j ${hours}h ${minutes < 10 ? '0' : ''}${minutes}m ${seconds < 10 ? '0' : ''}${seconds}s`;
+      }
+    }
+
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+  </script>
+</body>
+</html>
