@@ -18,6 +18,28 @@
       text-align: center;
     }
 
+    .logout {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+    }
+
+    .admin-label {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      color: #ccc;
+    }
+
+    .badge {
+      background: gold;
+      color: black;
+      padding: 0.1rem 0.4rem;
+      border-radius: 0.3rem;
+      font-size: 0.75rem;
+      margin-left: 0.5rem;
+    }
+
     .tabs {
       display: flex;
       justify-content: center;
@@ -97,22 +119,33 @@
 </head>
 <body>
   <script>
-    // 🔐 Protection par token dans l'URL
-    const ACCESS_TOKEN = "ef093cc1b79c4a67a4d7d3aa48cf4f21a81d507cf1f44131b571c7fe22702cb7";
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get("token");
+    const SESSION_KEY = "admin_logged_in";
+    const ADMIN_USER = decodeURIComponent((document.cookie.match('(^|;)\\s*admin_user\\s*=\\s*([^;]+)')||[])[2] || "");
 
-    if (token !== ACCESS_TOKEN) {
-      document.body.innerHTML = `
-        <div style="text-align:center;margin-top:4rem;color:white;">
-          <h2>⛔ Accès refusé</h2>
-          <p>Tu n'es pas autorisé à consulter cette page.</p>
-        </div>
-      `;
-      throw new Error("Unauthorized");
+    const ADMIN_ROLES = {
+      "admin1": "super",
+      "admin2": "mod",
+      "admin3": "lecteur"
+    };
+
+    const role = ADMIN_ROLES[ADMIN_USER] || "lecteur";
+
+    if (sessionStorage.getItem("admin_logged_in") !== "true") {
+  window.location.href = "login.html";
+}
+
+    function logout() {
+      document.cookie = `${SESSION_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+      document.cookie = `admin_user=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+      window.location.href = "login.html";
     }
   </script>
 
+  <div class="admin-label">
+    👤 Connecté en tant que <strong id="adminName"></strong>
+    <span id="badge" class="badge"></span>
+  </div>
+  <button class="logout" onclick="logout()">🔓 Se déconnecter</button>
   <h1>🔐 Panneau Admin – Réservations Streamer</h1>
 
   <div class="tabs">
@@ -135,6 +168,9 @@
     const APPROVED_KEY = "approvedReservation";
     const HISTORY_KEY = "reservationHistory";
 
+    document.getElementById("adminName").textContent = ADMIN_USER || "Inconnu";
+    document.getElementById("badge").textContent = role === "super" ? "Super Admin" : (role === "mod" ? "Modérateur" : "Lecteur");
+
     function switchTab(tab) {
       document.querySelectorAll('.tab-content').forEach(div => div.classList.remove('active'));
       document.querySelectorAll('.tabs button').forEach(btn => btn.classList.remove('active'));
@@ -143,7 +179,7 @@
     }
 
     function loadAll() {
-      loadPending();
+      if (role !== "lecteur") loadPending();
       loadActive();
       loadHistory();
     }
@@ -176,12 +212,14 @@
     }
 
     function editField(index, field, value) {
+      if (role === "lecteur") return;
       const data = JSON.parse(localStorage.getItem(PENDING_KEY)) || [];
       data[index][field] = value;
       localStorage.setItem(PENDING_KEY, JSON.stringify(data));
     }
 
     function approve(index) {
+      if (role === "lecteur") return;
       const pending = JSON.parse(localStorage.getItem(PENDING_KEY)) || [];
       const approved = pending.splice(index, 1)[0];
       const duration = parseInt(document.getElementById(`duration-${index}`).value) || 24;
@@ -196,6 +234,7 @@
     }
 
     function reject(index) {
+      if (role === "lecteur") return;
       const pending = JSON.parse(localStorage.getItem(PENDING_KEY)) || [];
       const rejected = pending.splice(index, 1)[0];
       rejected.status = "refusé";
@@ -233,6 +272,7 @@
     }
 
     function cancelActive() {
+      if (role === "lecteur") return;
       if (confirm("Supprimer la réservation active ?")) {
         const data = JSON.parse(localStorage.getItem(APPROVED_KEY));
         logToHistory({ ...data, status: "annulée", validatedAt: new Date().toISOString() });
