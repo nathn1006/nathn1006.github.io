@@ -96,8 +96,9 @@
   </style>
 </head>
 <body>
-    <script>
-    const reservation = JSON.parse(localStorage.getItem("approvedReservation"));
+
+<script>
+  const reservation = JSON.parse(localStorage.getItem("approvedReservation"));
   if (reservation) {
     const now = new Date();
     const expires = new Date(reservation.expiresAt);
@@ -107,63 +108,75 @@
       localStorage.removeItem("approvedReservation");
     }
   }
+
   const last = localStorage.getItem("lastValidatedStreamer");
-if (last) {
-  alert(`✅ Félicitations ${last} ! Ta réservation a été validée.`);
-  localStorage.removeItem("lastValidatedStreamer");
-}
+  if (last) {
+    alert(`✅ Félicitations ${last} ! Ta réservation a été validée.`);
+    localStorage.removeItem("lastValidatedStreamer");
+  }
 </script>
-  <h1>🎮 Réserve cette page</h1>
-  <p class="description">Tu es streamer ou créateur de contenu ? Remplis ce formulaire pour demander à occuper cette page pendant 24h (sous validation manuelle).</p>
 
-  <div class="form-card">
-    <input type="text" id="name" placeholder="Nom du streamer *" required>
-    <input type="text" id="twitch" placeholder="Chaîne Twitch (optionnel)">
-    <input type="text" id="youtube" placeholder="ID de la vidéo YouTube en direct (optionnel)">
-    <textarea id="description" placeholder="Message ou description" rows="4"></textarea>
-    <input type="text" id="twitter" placeholder="Lien Twitter (optionnel)">
-    <input type="text" id="instagram" placeholder="Lien Instagram (optionnel)">
-    <input type="text" id="youtubeLink" placeholder="Lien de ta chaîne YouTube (optionnel)">
+<h1>🎮 Réserve cette page</h1>
+<p class="description">Tu es streamer ou créateur de contenu ? Remplis ce formulaire pour demander à occuper cette page pendant 24h (sous validation manuelle).</p>
 
-    <button onclick="submitReservation()">Envoyer ma demande</button>
-  </div>
+<div class="form-card">
+  <input type="text" id="name" placeholder="Nom du streamer *" required>
+  <input type="text" id="twitch" placeholder="Chaîne Twitch (optionnel)">
+  <input type="text" id="youtube" placeholder="ID de la vidéo YouTube en direct (optionnel)">
+  <textarea id="description" placeholder="Message ou description" rows="4"></textarea>
+  <input type="text" id="twitter" placeholder="Lien Twitter (optionnel)">
+  <input type="text" id="instagram" placeholder="Lien Instagram (optionnel)">
+  <input type="text" id="youtubeLink" placeholder="Lien de ta chaîne YouTube (optionnel)">
+  <button onclick="submitReservation()">Envoyer ma demande</button>
+</div>
 
-  <script>
-    function submitReservation() {
-  const data = {
-    name: document.getElementById("name").value.trim(),
-    twitch: document.getElementById("twitch").value.trim(),
-    youtube: document.getElementById("youtube").value.trim(),
-    description: document.getElementById("description").value.trim(),
-    twitter: document.getElementById("twitter").value.trim(),
-    instagram: document.getElementById("instagram").value.trim(),
-    youtubeLink: document.getElementById("youtubeLink").value.trim()
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+<script>
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyDnj5lDeKvfbOvvgENjkGfeV7vw6rHlBiU",
+    authDomain: "legendaweb-c8ec1.firebaseapp.com",
+    databaseURL: "https://legendaweb-c8ec1-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "legendaweb-c8ec1",
+    storageBucket: "legendaweb-c8ec1.appspot.com",
+    messagingSenderId: "930376439071",
+    appId: "1:930376439071:web:09f87f27976022e4c00c2a",
+    measurementId: "G-D7HDC71PL7"
   };
 
-  fetch("https://script.google.com/macros/s/AKfycbyrVHC46bOiSt0rrzn87YLUOtKvSYj1K2q89SPyVj9Eg1Ux3SSwDYF-vtvZ9fLSo4RC/exec", {
-    method: "POST",
-    body: JSON.stringify(data)
-  })
-  .then(res => res.text())
-  .then(txt => {
-    alert("✅ Demande envoyée !");
-    location.reload();
-  })
-  .catch(err => alert("Erreur : " + err));
-}
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
-      if (!data.name) {
-        alert("Le nom est requis.");
-        return;
-      }
+  function submitReservation() {
+    const data = {
+      name: document.getElementById("name").value.trim(),
+      twitch: document.getElementById("twitch").value.trim(),
+      youtube: document.getElementById("youtube").value.trim(),
+      description: document.getElementById("description").value.trim(),
+      twitter: document.getElementById("twitter").value.trim(),
+      instagram: document.getElementById("instagram").value.trim(),
+      youtubeLink: document.getElementById("youtubeLink").value.trim(),
+      submittedAt: new Date().toISOString()
+    };
 
-      const pending = JSON.parse(localStorage.getItem("pendingReservations")) || [];
-      pending.push(data);
-      localStorage.setItem("pendingReservations", JSON.stringify(pending));
+    if (!data.name) {
+      alert("Le nom est requis.");
+      return;
+    }
 
-      alert("✅ Ta demande a été envoyée ! Elle sera examinée par un admin.");
-      location.reload();
-  </script>
+    db.ref("reservations").push(data)
+      .then(() => {
+        alert("✅ Réservation envoyée !");
+        location.reload();
+      })
+      .catch(err => {
+        alert("❌ Erreur : " + err.message);
+      });
+  }
+</script>
 
 </body>
 </html>
