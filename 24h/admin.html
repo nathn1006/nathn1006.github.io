@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin – Gestion des Réservations</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
+      margin: 0;
+      padding: 2rem;
+    }
+
+    h1 {
+      color: #7700ff;
+      text-align: center;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+
+    .tabs button {
+      background: #222;
+      color: white;
+      padding: 0.5rem 1.2rem;
+      border: 1px solid #7700ff;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .tabs button.active {
+      background: #7700ff;
+    }
+
+    .tab-content {
+      display: none;
+      max-width: 800px;
+      margin: auto;
+      background: #1a1a1a;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 0 10px #7700ff55;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .entry {
+      background: #2a2a2a;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .entry input, .entry textarea {
+      width: 100%;
+      margin-top: 0.3rem;
+      padding: 0.5rem;
+      background: #111;
+      color: white;
+      border: 1px solid #444;
+      border-radius: 5px;
+    }
+
+    .actions {
+      margin-top: 0.5rem;
+      display: flex;
+      gap: 1rem;
+    }
+
+    button.approve { background: #00cc66; }
+    button.reject { background: #cc0033; }
+    button.cancel { background: #cc9900; }
+    button.export { margin-top: 1rem; background: #3366ff; }
+
+    button {
+      padding: 0.5rem 1rem;
+      border: none;
+      color: white;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .info {
+      font-size: 0.9em;
+      color: #ccc;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    // 🔐 Protection par token dans l'URL
+    const ACCESS_TOKEN = "ef093cc1b79c4a67a4d7d3aa48cf4f21a81d507cf1f44131b571c7fe22702cb7";
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get("token");
+
+    if (token !== ACCESS_TOKEN) {
+      document.body.innerHTML = `
+        <div style="text-align:center;margin-top:4rem;color:white;">
+          <h2>⛔ Accès refusé</h2>
+          <p>Tu n'es pas autorisé à consulter cette page.</p>
+        </div>
+      `;
+      throw new Error("Unauthorized");
+    }
+  </script>
+
+  <h1>🔐 Panneau Admin – Réservations Streamer</h1>
+
+  <div class="tabs">
+    <button onclick="switchTab('pending')" class="active">📥 Demandes</button>
+    <button onclick="switchTab('active')">🎥 Réservation actuelle</button>
+    <button onclick="switchTab('history')">📜 Historique</button>
+  </div>
+
+  <div id="pending" class="tab-content active"></div>
+  <div id="active" class="tab-content"></div>
+  <div id="history" class="tab-content">
+    <div style="text-align: right;">
+      <button class="export" onclick="exportHistory()">📁 Exporter JSON</button>
+    </div>
+    <div id="historyContent"></div>
+  </div>
+
+  <script>
+    const PENDING_KEY = "pendingReservations";
+    const APPROVED_KEY = "approvedReservation";
+    const HISTORY_KEY = "reservationHistory";
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-content').forEach(div => div.classList.remove('active'));
+      document.querySelectorAll('.tabs button').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(tab).classList.add('active');
+      document.querySelector(`.tabs button[onclick="switchTab('${tab}')"]`).classList.add('active');
+    }
+
+    function loadAll() {
+      loadPending();
+      loadActive();
+      loadHistory();
+    }
+
+    function loadPending() {
+      const container = document.getElementById("pending");
+      const data = JSON.parse(localStorage.getItem(PENDING_KEY)) || [];
+      container.innerHTML = data.length ? "" : "<p>Aucune demande en attente.</p>";
+
+      data.forEach((r, i) => {
+        const div = document.createElement("div");
+        div.className = "entry";
+        div.innerHTML = `
+          <label>Nom:<input value="${r.name}" onchange="editField(${i}, 'name', this.value)"></label>
+          <label>Description:<textarea onchange="editField(${i}, 'description', this.value)">${r.description}</textarea></label>
+          <label>Twitch:<input value="${r.twitch}" onchange="editField(${i}, 'twitch', this.value)"></label>
+          <label>YouTube ID:<input value="${r.youtube}" onchange="editField(${i}, 'youtube', this.value)"></label>
+          <label>Twitter:<input value="${r.twitter}" onchange="editField(${i}, 'twitter', this.value)"></label>
+          <label>Instagram:<input value="${r.instagram}" onchange="editField(${i}, 'instagram', this.value)"></label>
+          <label>Chaîne YouTube:<input value="${r.youtubeLink}" onchange="editField(${i}, 'youtubeLink', this.value)"></label>
+          <label>Durée (heures):<input type="number" min="1" max="48" value="24" id="duration-${i}"></label>
+          <div class="info">Soumis le ${new Date(r.submittedAt).toLocaleString()}</div>
+          <div class="actions">
+            <button class="approve" onclick="approve(${i})">✅ Valider</button>
+            <button class="reject" onclick="reject(${i})">❌ Refuser</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function editField(index, field, value) {
+      const data = JSON.parse(localStorage.getItem(PENDING_KEY)) || [];
+      data[index][field] = value;
+      localStorage.setItem(PENDING_KEY, JSON.stringify(data));
+    }
+
+    function approve(index) {
+      const pending = JSON.parse(localStorage.getItem(PENDING_KEY)) || [];
+      const approved = pending.splice(index, 1)[0];
+      const duration = parseInt(document.getElementById(`duration-${index}`).value) || 24;
+      approved.expiresAt = new Date(Date.now() + duration * 3600 * 1000).toISOString();
+
+      localStorage.setItem(PENDING_KEY, JSON.stringify(pending));
+      localStorage.setItem(APPROVED_KEY, JSON.stringify(approved));
+      localStorage.setItem("lastValidatedStreamer", approved.name);
+      logToHistory({ ...approved, status: "approuvé", validatedAt: new Date().toISOString() });
+
+      loadAll();
+    }
+
+    function reject(index) {
+      const pending = JSON.parse(localStorage.getItem(PENDING_KEY)) || [];
+      const rejected = pending.splice(index, 1)[0];
+      rejected.status = "refusé";
+      rejected.validatedAt = new Date().toISOString();
+
+      logToHistory(rejected);
+      localStorage.setItem(PENDING_KEY, JSON.stringify(pending));
+      loadAll();
+    }
+
+    function loadActive() {
+      const container = document.getElementById("active");
+      const data = JSON.parse(localStorage.getItem(APPROVED_KEY));
+      container.innerHTML = "";
+
+      if (!data) {
+        container.innerHTML = "<p>Aucune réservation en cours.</p>";
+        return;
+      }
+
+      const expires = new Date(data.expiresAt);
+      const now = new Date();
+      const mins = Math.floor((expires - now) / 60000);
+
+      const div = document.createElement("div");
+      div.className = "entry";
+      div.innerHTML = `
+        <strong>${data.name}</strong><br>
+        <div class="info">Expire dans ${mins} min (${expires.toLocaleString()})</div>
+        <div class="actions">
+          <button class="cancel" onclick="cancelActive()">🛑 Annuler</button>
+        </div>
+      `;
+      container.appendChild(div);
+    }
+
+    function cancelActive() {
+      if (confirm("Supprimer la réservation active ?")) {
+        const data = JSON.parse(localStorage.getItem(APPROVED_KEY));
+        logToHistory({ ...data, status: "annulée", validatedAt: new Date().toISOString() });
+        localStorage.removeItem(APPROVED_KEY);
+        loadAll();
+      }
+    }
+
+    function loadHistory() {
+      const history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+      const container = document.getElementById("historyContent");
+      container.innerHTML = history.length ? "" : "<p>Aucun historique.</p>";
+
+      history.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "entry";
+        div.innerHTML = `
+          <strong>${item.name}</strong> – ${item.status}<br>
+          <div class="info">Décision : ${new Date(item.validatedAt).toLocaleString()}</div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function logToHistory(entry) {
+      const history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+      history.unshift(entry);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    }
+
+    function exportHistory() {
+      const data = localStorage.getItem(HISTORY_KEY);
+      const blob = new Blob([data], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "historique_reservations.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    loadAll();
+  </script>
+</body>
+</html>

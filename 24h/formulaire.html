@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Réserver la page - Streamer</title>
+  <style>
+    :root {
+      --primary: #7700ff;
+      --bg: #0e0e0e;
+      --card: rgba(255, 255, 255, 0.06);
+      --text: #ffffff;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      color: var(--primary);
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+
+    p.description {
+      color: #ccc;
+      font-size: 1rem;
+      max-width: 600px;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .form-card {
+      background: var(--card);
+      padding: 2rem;
+      border-radius: 1rem;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 0 20px #7700ff30;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 0.75rem;
+      background: #1a1a1a;
+      color: white;
+      border: 1px solid #444;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 1.5rem;
+      padding: 0.9rem;
+      background-color: var(--primary);
+      color: white;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #5e00c7;
+    }
+
+    @media screen and (max-width: 600px) {
+      body {
+        padding: 1rem;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .form-card {
+        padding: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+    <script>
+    const reservation = JSON.parse(localStorage.getItem("approvedReservation"));
+  if (reservation) {
+    const now = new Date();
+    const expires = new Date(reservation.expiresAt);
+    if (now < expires) {
+      window.location.href = "live1.html";
+    } else {
+      localStorage.removeItem("approvedReservation");
+    }
+  }
+  const last = localStorage.getItem("lastValidatedStreamer");
+if (last) {
+  alert(`✅ Félicitations ${last} ! Ta réservation a été validée.`);
+  localStorage.removeItem("lastValidatedStreamer");
+}
+</script>
+  <h1>🎮 Réserve cette page</h1>
+  <p class="description">Tu es streamer ou créateur de contenu ? Remplis ce formulaire pour demander à occuper cette page pendant 24h (sous validation manuelle).</p>
+
+  <div class="form-card">
+    <input type="text" id="name" placeholder="Nom du streamer *" required>
+    <input type="text" id="twitch" placeholder="Chaîne Twitch (optionnel)">
+    <input type="text" id="youtube" placeholder="ID de la vidéo YouTube en direct (optionnel)">
+    <textarea id="description" placeholder="Message ou description" rows="4"></textarea>
+    <input type="text" id="twitter" placeholder="Lien Twitter (optionnel)">
+    <input type="text" id="instagram" placeholder="Lien Instagram (optionnel)">
+    <input type="text" id="youtubeLink" placeholder="Lien de ta chaîne YouTube (optionnel)">
+
+    <button onclick="submitReservation()">Envoyer ma demande</button>
+  </div>
+
+  <script>
+    function submitReservation() {
+      const data = {
+        name: document.getElementById("name").value.trim(),
+        twitch: document.getElementById("twitch").value.trim(),
+        youtube: document.getElementById("youtube").value.trim(),
+        description: document.getElementById("description").value.trim(),
+        twitter: document.getElementById("twitter").value.trim(),
+        instagram: document.getElementById("instagram").value.trim(),
+        youtubeLink: document.getElementById("youtubeLink").value.trim(),
+        submittedAt: new Date().toISOString()
+      };
+
+      if (!data.name) {
+        alert("Le nom est requis.");
+        return;
+      }
+
+      const pending = JSON.parse(localStorage.getItem("pendingReservations")) || [];
+      pending.push(data);
+      localStorage.setItem("pendingReservations", JSON.stringify(pending));
+
+      alert("✅ Ta demande a été envoyée ! Elle sera examinée par un admin.");
+      location.reload();
+    }
+  </script>
+
+</body>
+</html>
