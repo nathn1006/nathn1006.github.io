@@ -29,18 +29,6 @@
       text-align: center;
       margin-bottom: 0.5rem;
     }
-    .btn-retour {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  background: #333;
-  color: white;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  width: auto;
-}
 
     p.description {
       color: #ccc;
@@ -108,15 +96,13 @@
   </style>
 </head>
 <body>
-  <button onclick="window.location.href='index.html'" class="btn-retour">⬅️ Retour</button>
-
     <script>
     const reservation = JSON.parse(localStorage.getItem("approvedReservation"));
   if (reservation) {
     const now = new Date();
     const expires = new Date(reservation.expiresAt);
     if (now < expires) {
-      window.location.href = "partage.html";
+      window.location.href = "live1.html";
     } else {
       localStorage.removeItem("approvedReservation");
     }
@@ -144,16 +130,27 @@ if (last) {
 
   <script>
     function submitReservation() {
-      const data = {
-        name: document.getElementById("name").value.trim(),
-        twitch: document.getElementById("twitch").value.trim(),
-        youtube: document.getElementById("youtube").value.trim(),
-        description: document.getElementById("description").value.trim(),
-        twitter: document.getElementById("twitter").value.trim(),
-        instagram: document.getElementById("instagram").value.trim(),
-        youtubeLink: document.getElementById("youtubeLink").value.trim(),
-        submittedAt: new Date().toISOString()
-      };
+  const data = {
+    name: document.getElementById("name").value.trim(),
+    twitch: document.getElementById("twitch").value.trim(),
+    youtube: document.getElementById("youtube").value.trim(),
+    description: document.getElementById("description").value.trim(),
+    twitter: document.getElementById("twitter").value.trim(),
+    instagram: document.getElementById("instagram").value.trim(),
+    youtubeLink: document.getElementById("youtubeLink").value.trim()
+  };
+
+  fetch("https://script.google.com/macros/s/AKfycbyrVHC46bOiSt0rrzn87YLUOtKvSYj1K2q89SPyVj9Eg1Ux3SSwDYF-vtvZ9fLSo4RC/exec", {
+    method: "POST",
+    body: JSON.stringify(data)
+  })
+  .then(res => res.text())
+  .then(txt => {
+    alert("✅ Demande envoyée !");
+    location.reload();
+  })
+  .catch(err => alert("Erreur : " + err));
+}
 
       if (!data.name) {
         alert("Le nom est requis.");
@@ -166,7 +163,6 @@ if (last) {
 
       alert("✅ Ta demande a été envoyée ! Elle sera examinée par un admin.");
       location.reload();
-    }
   </script>
 
 </body>
