@@ -5,230 +5,250 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Legenda</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* Réinitialisation des marges et paddings par défaut */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1E1E1E;
+            color: #F2F2F2;
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background-color: #fff;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 1000px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        header {
+            margin-bottom: 40px;
+        }
+
+        header .logo h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 32px;
+            color: #FF6600;
+            margin-bottom: 20px;
+        }
+
+        .menu-toggle {
+            display: none;
+            font-size: 28px;
+            color: #FF6600;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        nav ul {
+            list-style-type: none;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        nav ul li {
+            display: inline-block;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            font-size: 18px;
+            color: #333;
+            padding: 12px 24px;
+            border-radius: 5px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        nav ul li a:hover {
+            background-color: #FF6600;
+            color: #fff;
+            transform: scale(1.05);
+        }
+
+        .main-section {
+            margin-bottom: 40px;
+        }
+
+        .main-section h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            font-family: 'Poppins', sans-serif;
+            color: #111;
+        }
+
+        .main-section p {
+            font-size: 20px;
+            margin-bottom: 40px;
+            color: #111;
+        }
+
+        .btn-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .btn {
+            background-color: #FF6600;
+            color: white;
+            padding: 15px 10px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 18px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #FF8000;
+            transform: scale(1.05);
+        }
+
+        footer {
+            text-align: center;
+            background-color: #111;
+            color: #aaa;
+            padding: 20px 0;
+            font-size: 14px;
+        }
+
+        footer p {
+            margin: 0;
+        }
+
+        .social-icons {
+            margin-top: 15px;
+        }
+
+        .social-icons a {
+            margin: 0 10px;
+            transition: transform 0.3s;
+        }
+
+        .social-icons a:hover {
+            transform: scale(1.2);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                width: 95%;
+            }
+
+            header .logo h1 {
+                font-size: 28px;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            nav ul {
+                flex-direction: column;
+                background-color: #fff;
+                border-radius: 10px;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                padding: 10px 0;
+                position: absolute;
+                top: 80px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 80%;
+                display: none;
+                z-index: 100;
+            }
+
+            nav.active ul {
+                display: flex;
+            }
+
+            nav ul li {
+                margin-bottom: 10px;
+            }
+
+            .main-section h2 {
+                font-size: 28px;
+            }
+
+            .main-section p {
+                font-size: 18px;
+            }
+
+            .btn {
+                padding: 12px 24px;
+            }
+        }
+    </style>
 </head>
-<style>
-    /* Réinitialisation des marges et paddings par défaut */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-/* Définir la police principale */
-body {
-    font-family: 'Roboto', sans-serif;
-    background-color: #1E1E1E;  /* Fond sombre pour un effet moderne */
-    color: #F2F2F2;  /* Texte clair pour le contraste */
-    line-height: 1.6;
-    height: 100vh;  /* Utilise toute la hauteur de la fenêtre */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* Container centré avec bordure */
-.container {
-    background-color: #fff;  /* Fond blanc */
-    border-radius: 15px;  /* Bordures arrondies */
-    width: 90%;
-    max-width: 1000px;  /* Limiter la taille maximale */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);  /* Ombre portée pour l'effet 3D */
-    padding: 30px;
-    text-align: center;
-}
-
-/* Header avec navigation sticky */
-header {
-    margin-bottom: 40px;  /* Espacement entre le header et le contenu */
-}
-
-header .logo h1 {
-    font-family: 'Poppins', sans-serif;
-    font-size: 32px;
-    color: #FF6600;  /* Une touche d'orange pour la marque */
-    margin-bottom: 20px;
-}
-
-nav ul {
-    list-style-type: none;
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-}
-
-nav ul li {
-    display: inline-block;
-}
-
-nav ul li a {
-    text-decoration: none;
-    font-size: 18px;
-    color: #333;  /* Couleur sombre pour les liens */
-    padding: 12px 24px;
-    border-radius: 5px;
-    transition: background-color 0.3s, transform 0.3s;
-}
-
-nav ul li a:hover {
-    background-color: #FF6600;  /* Orange clair au survol */
-    color: #fff;
-    transform: scale(1.05);  /* Effet de zoom sur le lien */
-}
-
-/* Section principale */
-.main-section {
-    margin-bottom: 40px;
-}
-
-.main-section h2 {
-    font-size: 36px;
-    margin-bottom: 20px;
-    font-family: 'Poppins', sans-serif;
-    color: #111;
-}
-
-.main-section p {
-    font-size: 20px;
-    margin-bottom: 40px;
-    color: #111;
-}
-
-/* Conteneur des boutons */
-.btn-container {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-}
-
-.btn {
-    background-color: #FF6600;
-    color: white;
-    padding: 15px 10px;
-    border-radius: 5px;
-    text-decoration: none;
-    font-size: 18px;
-    transition: background-color 0.3s, transform 0.3s;
-}
-
-.btn:hover {
-    background-color: #FF8000;
-    transform: scale(1.05);
-}
-
-/* Footer */
-footer {
-    text-align: center;
-    background-color: #111;
-    color: #aaa;
-    padding: 20px 0;
-    font-size: 14px;
-}
-
-footer p {
-    margin: 0;
-}
-
-/* Mobile Responsive Design */
-@media (max-width: 768px) {
-    .container {
-        width: 95%;  /* Réduire la largeur du conteneur pour les petits écrans */
-    }
-
-    header .logo h1 {
-        font-size: 28px;
-    }
-
-    nav ul {
-        flex-direction: column;
-    }
-
-    nav ul li {
-        margin-bottom: 10px;
-    }
-
-    .main-section h2 {
-        font-size: 28px;
-    }
-
-    .main-section p {
-        font-size: 18px;
-    }
-
-    .btn {
-        padding: 12px 24px;
-    }
-}
-/* Mobile Responsive Design */
-@media (max-width: 768px) {
-    .container {
-        width: 95%;  /* Réduire la largeur du conteneur pour les petits écrans */
-    }
-
-    header .logo h1 {
-        font-size: 28px;
-    }
-
-    #countdown {
-        font-size: 40px;
-    }
-}
-    .social-icons {
-    margin-top: 15px;
-}
-
-.social-icons a {
-    margin: 0 10px;
-    transition: transform 0.3s;
-}
-
-.social-icons a:hover {
-    transform: scale(1.2);
-}
-</style>
 <body>
 
-    <!-- Section principale avec un conteneur centré -->
-    <div class="container">
-        <!-- Header avec navigation sticky -->
-        <header>
-            <div class="logo">
-                <h1>Legenda</h1>
-            </div>
-            <nav>
-                <ul>
-                   <!-- <li><a href="projet1.html">Projet 1</a></li> -->
-                </ul>
-            </nav>
-        </header>
+<div class="container">
+    <header>
+        <div class="logo">
+            <h1>Legenda</h1>
+        </div>
+        <div class="menu-toggle" id="menu-toggle">&#9776;</div>
+        <nav id="nav-menu">
+            <ul>
+                <li><a href="../HistoireDeFortnite/histoiref.html">Histoire de Fortnite</a></li>
+                <li><a href="../BO6/index.html">Black ops 6 Zombie</a></li>
+                <li><a href="../BO7/index.html">Black Ops 7 Zombie</a></li>
+                <li><a href="../Game/index.html">Jeux Connectées</a></li>
+                <li><a href="../24h/index.html">Réseau</a></li>
+                <li><a href="#">?</a></li>
+            </ul>
+        </nav>
+    </header>
 
-        <!-- Section principale du contenu -->
-        <section class="main-section">
-            <h2>Bienvenue sur Le site de LEGENDA</h2>
-            <p>Découvrez ici touts les projets actif de notre serveur.</p>
-            <div class="btn-container">
-                <a href="../HistoireDeFortnite/histoiref.html" class="btn">Histoire de Fortnite</a>
-                <a href="../BO6/index.html" class="btn">Black ops 6 Zombie</a>
-                <a href="../BO7/index.html" class="btn">Black Ops 7 Zombie</a>
-                <a href="../Game/index.html" class="btn">Jeux Connectées</a>
-                <a href="../24h/index.html" class="btn">Réseau</a>
-                <a href="" class="btn">?</a>
-            </div>
-        </section>
+    <section class="main-section">
+        <h2>Bienvenue sur Le site de LEGENDA</h2>
+        <p>Découvrez ici touts les projets actif de notre serveur.</p>
+        <div class="btn-container">
+            <a href="../HistoireDeFortnite/histoiref.html" class="btn">Histoire de Fortnite</a>
+            <a href="../BO6/index.html" class="btn">Black ops 6 Zombie</a>
+            <a href="../BO7/index.html" class="btn">Black Ops 7 Zombie</a>
+            <a href="../Game/index.html" class="btn">Jeux Connectées</a>
+            <a href="../24h/index.html" class="btn">Réseau</a>
+            <a href="#" class="btn">?</a>
+        </div>
+    </section>
 
-        <!-- Footer -->
-        <footer>
-            <p>© 2025 Legenda - Tous droits réservés</p>
-            <div class="social-icons">
-        <a href="https://www.twitch.tv/nathn1006" target="_blank" title="Twitch">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/d/d3/Twitch_Glitch_Logo_Purple.svg" alt="Twitch" width="30" />
-        </a>
-        <a href="https://discord.gg/YAqm9VmKGH" target="_blank" title="Discord">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/4/48/Discord_Logo_SVG.svg" alt="Discord" width="30" />
-        </a>
-    </div>
-</footer>
-        </footer>
-    </div>
+    <footer>
+        <p>© 2025 Legenda - Tous droits réservés</p>
+        <div class="social-icons">
+            <a href="https://www.twitch.tv/nathn1006" target="_blank" title="Twitch">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/d/d3/Twitch_Glitch_Logo_Purple.svg" alt="Twitch" width="30" />
+            </a>
+            <a href="https://discord.gg/YAqm9VmKGH" target="_blank" title="Discord">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/4/48/Discord_Logo_SVG.svg" alt="Discord" width="30" />
+            </a>
+        </div>
+    </footer>
+</div>
+
+<script>
+    const menuToggle = document.getElementById('menu-toggle');
+    const navMenu = document.getElementById('nav-menu');
+
+    menuToggle.addEventListener('click', () => {
+        navMenu.classList.toggle('active');
+    });
+</script>
 
 </body>
 </html>
