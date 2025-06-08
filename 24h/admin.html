@@ -127,14 +127,18 @@
           <div class="info">Instagram: ${r.instagram || "-"}</div>
           <div class="info">Soumis le ${new Date(r.submittedAt).toLocaleString()}</div>
           <div class="actions">
-            <button class="approve" onclick='approveRequest("${key}", ${JSON.stringify(r)})'>✅ Approuver</button>
+            <button class="approve" onclick='approveRequest("${key}")'>✅ Approuver</button>
           </div>`;
         container.appendChild(div);
       });
     });
   }
 
-  function approveRequest(key, data) {
+  function approveRequest(key) {
+  db.ref("reservations/" + key).once("value", snapshot => {
+    const data = snapshot.val();
+    if (!data) return alert("Erreur : données introuvables.");
+
     const expiresAt = Date.now() + 24 * 3600 * 1000;
     data.expiresAt = new Date(expiresAt).toISOString();
 
@@ -145,7 +149,8 @@
         loadAll();
       });
     });
-  }
+  });
+}
 
   function loadApproved() {
     const container = document.getElementById("active");
