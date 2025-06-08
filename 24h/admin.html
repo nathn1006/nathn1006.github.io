@@ -191,14 +191,6 @@
     });
   }
 
-  function cancelApproved() {
-    if (confirm("Supprimer la réservation active ?")) {
-      db.ref("approved").remove(() => {
-        alert("⛔ Réservation annulée.");
-        loadAll();
-      });
-    }
-  }
 
   loadAll();
 </script>
