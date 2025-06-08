@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Live en cours</title>
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-database-compat.js"></script>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -73,7 +75,19 @@
   </div>
 
   <script>
-    const data = JSON.parse(localStorage.getItem("approvedReservation"));
+    const firebaseConfig = {
+      apiKey: "AIzaSyDnj5lDeKvfbOvvgENjkGfeV7vw6rHlBiU",
+      authDomain: "legendaweb-c8ec1.firebaseapp.com",
+      databaseURL: "https://legendaweb-c8ec1-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "legendaweb-c8ec1",
+      storageBucket: "legendaweb-c8ec1.appspot.com",
+      messagingSenderId: "930376439071",
+      appId: "1:930376439071:web:09f87f27976022e4c00c2a",
+      measurementId: "G-D7HDC71PL7"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
     function formatTime(ms) {
       const s = Math.floor(ms / 1000);
@@ -83,7 +97,13 @@
       return `${h}h ${m}m ${sec}s`;
     }
 
-    if (data) {
+    db.ref("approved").once("value", snapshot => {
+      const data = snapshot.val();
+      if (!data) {
+        document.getElementById("noLive").style.display = "block";
+        return;
+      }
+
       const expiresAt = new Date(data.expiresAt);
       const now = new Date();
 
@@ -115,24 +135,18 @@
           const diff = expiresAt - now;
           if (diff <= 0) {
             countdown.textContent = "⛔ Expiré";
-            localStorage.removeItem("approvedReservation");
-            location.reload();
+            document.getElementById("liveCard").style.display = "none";
+            document.getElementById("noLive").style.display = "block";
             return;
           }
           countdown.textContent = `🕒 Temps restant : ${formatTime(diff)}`;
         }
         updateCountdown();
         setInterval(updateCountdown, 1000);
-
       } else {
-        // Expiré
-        localStorage.removeItem("approvedReservation");
         document.getElementById("noLive").style.display = "block";
       }
-    } else {
-      // Rien à afficher
-      document.getElementById("noLive").style.display = "block";
-    }
+    });
   </script>
 </body>
 </html>
