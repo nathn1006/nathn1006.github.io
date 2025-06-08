@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Live en cours</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0e0e0e;
+      color: white;
+      margin: 0;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #7700ff;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 2rem;
+      border-radius: 1rem;
+      max-width: 800px;
+      margin: auto;
+      box-shadow: 0 0 20px #7700ff30;
+    }
+
+    iframe {
+      width: 100%;
+      height: 480px;
+      margin-top: 1rem;
+      border: none;
+      border-radius: 0.5rem;
+    }
+
+    .social-links a {
+      margin: 0 1rem;
+      color: #66ccff;
+      text-decoration: none;
+      font-size: 1.1rem;
+    }
+
+    #countdown {
+      margin-top: 1rem;
+      font-size: 1rem;
+      color: #ccc;
+    }
+
+    #noLive {
+      color: #ccc;
+      font-style: italic;
+      margin-top: 4rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card" id="liveCard" style="display:none;">
+    <h1>🎥 En direct avec <span id="streamerName"></span></h1>
+    <div id="streamEmbed"></div>
+    <p id="description"></p>
+    <div class="social-links" id="socialLinks"></div>
+    <div id="countdown"></div>
+  </div>
+
+  <div id="noLive" style="display:none;">
+    <p>Aucune réservation active actuellement.</p>
+  </div>
+
+  <script>
+    const data = JSON.parse(localStorage.getItem("approvedReservation"));
+
+    function formatTime(ms) {
+      const s = Math.floor(ms / 1000);
+      const h = Math.floor(s / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      const sec = s % 60;
+      return `${h}h ${m}m ${sec}s`;
+    }
+
+    if (data) {
+      const expiresAt = new Date(data.expiresAt);
+      const now = new Date();
+
+      if (now < expiresAt) {
+        document.getElementById("liveCard").style.display = "block";
+        document.getElementById("streamerName").textContent = data.name;
+        document.getElementById("description").textContent = data.description;
+
+        // Liens sociaux
+        const links = document.getElementById("socialLinks");
+        if (data.twitter) links.innerHTML += `<a href="${data.twitter}" target="_blank">Twitter</a>`;
+        if (data.instagram) links.innerHTML += `<a href="${data.instagram}" target="_blank">Instagram</a>`;
+        if (data.youtubeLink) links.innerHTML += `<a href="${data.youtubeLink}" target="_blank">YouTube</a>`;
+
+        // Intégration du stream
+        const embed = document.getElementById("streamEmbed");
+        if (data.twitch) {
+          embed.innerHTML = `<iframe src="https://player.twitch.tv/?channel=${data.twitch}&parent=${location.hostname}" allowfullscreen></iframe>`;
+        } else if (data.youtube) {
+          embed.innerHTML = `<iframe src="https://www.youtube.com/embed/${data.youtube}?autoplay=1" allowfullscreen></iframe>`;
+        } else {
+          embed.innerHTML = "<p>Aucun stream en cours.</p>";
+        }
+
+        // Compte à rebours
+        const countdown = document.getElementById("countdown");
+        function updateCountdown() {
+          const now = new Date();
+          const diff = expiresAt - now;
+          if (diff <= 0) {
+            countdown.textContent = "⛔ Expiré";
+            localStorage.removeItem("approvedReservation");
+            location.reload();
+            return;
+          }
+          countdown.textContent = `🕒 Temps restant : ${formatTime(diff)}`;
+        }
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+
+      } else {
+        // Expiré
+        localStorage.removeItem("approvedReservation");
+        document.getElementById("noLive").style.display = "block";
+      }
+    } else {
+      // Rien à afficher
+      document.getElementById("noLive").style.display = "block";
+    }
+  </script>
+</body>
+</html>
