@@ -102,7 +102,7 @@
     const now = new Date();
     const expires = new Date(reservation.expiresAt);
     if (now < expires) {
-      window.location.href = "live1.html";
+      window.location.href = "partage.html";
     } else {
       localStorage.removeItem("approvedReservation");
     }
