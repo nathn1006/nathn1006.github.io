@@ -7,13 +7,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-database-compat.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: white;
-      margin: 0;
-      padding: 2rem;
-    }
+    body { font-family: Arial, sans-serif; background: #111; color: white; margin: 0; padding: 2rem; }
     h1 { color: #7700ff; text-align: center; }
     .logout { position: absolute; top: 1rem; right: 1rem; }
     .admin-label { position: absolute; top: 1rem; left: 1rem; color: #ccc; }
@@ -79,14 +73,10 @@
 <div class="tabs">
   <button onclick="switchTab('pending')" class="active">📥 Demandes</button>
   <button onclick="switchTab('active')">🎥 Réservation actuelle</button>
-  <button onclick="switchTab('history')">📜 Historique</button>
 </div>
 <div id="pending" class="tab-content active"></div>
 <div id="active" class="tab-content"></div>
-<div id="history" class="tab-content">
-  <div style="text-align: right;"><button class="export" onclick="exportHistory()">📁 Exporter JSON</button></div>
-  <div id="historyContent"></div>
-</div>
+
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyDnj5lDeKvfbOvvgENjkGfeV7vw6rHlBiU",
@@ -114,12 +104,13 @@
 
   function loadAll() {
     loadFirebaseReservations();
+    loadApproved();
   }
 
   function loadFirebaseReservations() {
     const container = document.getElementById("pending");
     container.innerHTML = "Chargement...";
-    db.ref("reservations").once("value").then(snapshot => {
+    db.ref("reservations").once("value", snapshot => {
       const data = snapshot.val();
       container.innerHTML = data ? "" : "<p>Aucune demande.</p>";
       if (!data) return;
@@ -135,23 +126,63 @@
           <div class="info">Twitter: ${r.twitter || "-"}</div>
           <div class="info">Instagram: ${r.instagram || "-"}</div>
           <div class="info">Soumis le ${new Date(r.submittedAt).toLocaleString()}</div>
-        `;
+          <div class="actions">
+            <button class="approve" onclick='approveRequest("${key}", ${JSON.stringify(r)})'>✅ Approuver</button>
+          </div>`;
         container.appendChild(div);
       });
-    }).catch(error => {
-      container.innerHTML = `<p style="color:red;">Erreur de chargement : ${error.message}</p>`;
-      console.error("Erreur Firebase:", error);
     });
   }
 
-  function exportHistory() {
-    const blob = new Blob([document.getElementById("pending").innerText], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "historique_reservations.txt";
-    a.click();
-    URL.revokeObjectURL(url);
+  function approveRequest(key, data) {
+    const expiresAt = Date.now() + 24 * 3600 * 1000;
+    data.expiresAt = new Date(expiresAt).toISOString();
+
+    db.ref("approved").set(data, err => {
+      if (err) return alert("Erreur approbation : " + err);
+      db.ref("reservations/" + key).remove(() => {
+        alert("✅ Réservation approuvée !");
+        loadAll();
+      });
+    });
+  }
+
+  function loadApproved() {
+    const container = document.getElementById("active");
+    container.innerHTML = "Chargement...";
+
+    db.ref("approved").once("value", snapshot => {
+      const data = snapshot.val();
+      container.innerHTML = "";
+
+      if (!data) {
+        container.innerHTML = "<p>Aucune réservation active.</p>";
+        return;
+      }
+
+      const expires = new Date(data.expiresAt);
+      const mins = Math.floor((expires - new Date()) / 60000);
+
+      const div = document.createElement("div");
+      div.className = "entry";
+      div.innerHTML = `
+        <strong>${data.name}</strong><br>
+        <div class="info">${data.description}</div>
+        <div class="info">Expire dans ${mins} minutes</div>
+        <div class="actions">
+          <button class="cancel" onclick="cancelApproved()">❌ Annuler</button>
+        </div>`;
+      container.appendChild(div);
+    });
+  }
+
+  function cancelApproved() {
+    if (confirm("Supprimer la réservation active ?")) {
+      db.ref("approved").remove(() => {
+        alert("⛔ Réservation annulée.");
+        loadAll();
+      });
+    }
   }
 
   loadAll();
