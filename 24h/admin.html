@@ -37,7 +37,7 @@
       background: #2a2a2a; padding: 1rem;
       border-radius: 0.5rem; margin-bottom: 1rem;
     }
-    .actions { margin-top: 0.5rem; display: flex; gap: 1rem; }
+    .actions { margin-top: 0.5rem; display: flex; gap: 1rem; flex-wrap: wrap; }
     button.approve { background: #00cc66; }
     button.reject { background: #cc0033; }
     button.cancel { background: #cc9900; }
@@ -64,6 +64,7 @@
     window.location.href = "login.html";
   }
 </script>
+
 <div class="admin-label">
   👤 Connecté en tant que <strong id="adminName"></strong>
   <span id="badge" class="badge"></span>
@@ -127,18 +128,15 @@
           <div class="info">Instagram: ${r.instagram || "-"}</div>
           <div class="info">Soumis le ${new Date(r.submittedAt).toLocaleString()}</div>
           <div class="actions">
-            <button class="approve" onclick='approveRequest("${key}")'>✅ Approuver</button>
+            <button class="approve" onclick='approveRequest("${key}", ${JSON.stringify(r)})'>✅ Approuver</button>
+            <button class="reject" onclick='rejectRequest("${key}")'>❌ Rejeter</button>
           </div>`;
         container.appendChild(div);
       });
     });
   }
 
-  function approveRequest(key) {
-  db.ref("reservations/" + key).once("value", snapshot => {
-    const data = snapshot.val();
-    if (!data) return alert("Erreur : données introuvables.");
-
+  function approveRequest(key, data) {
     const expiresAt = Date.now() + 24 * 3600 * 1000;
     data.expiresAt = new Date(expiresAt).toISOString();
 
@@ -149,8 +147,20 @@
         loadAll();
       });
     });
-  });
-}
+  }
+
+  function rejectRequest(key) {
+    if (confirm("❌ Confirmer le rejet de cette demande ?")) {
+      db.ref("reservations/" + key).remove(error => {
+        if (error) {
+          alert("Erreur lors du rejet : " + error);
+        } else {
+          alert("🚫 Demande rejetée.");
+          loadAll();
+        }
+      });
+    }
+  }
 
   function loadApproved() {
     const container = document.getElementById("active");
