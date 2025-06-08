@@ -120,6 +120,13 @@
     const container = document.getElementById("pending");
     container.innerHTML = "Chargement...";
     db.ref("reservations").once("value", snapshot => {
+      .then(snapshot => {
+  console.log("Données Firebase:", snapshot.val());
+  // ...
+})
+                                db.ref("reservations").on("value", () => {
+  loadFirebaseReservations();
+});
       const data = snapshot.val();
       container.innerHTML = data ? "" : "<p>Aucune demande.</p>";
       if (!data) return;
