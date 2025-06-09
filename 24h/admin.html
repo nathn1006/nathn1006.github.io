@@ -73,43 +73,56 @@
 </div>
 <script>
   document.getElementById("adminName").textContent = ADMIN_USER || "Inconnu";
+
   function switchTab(tab) {
     document.querySelectorAll('.tab-content').forEach(div => div.classList.remove('active'));
     document.querySelectorAll('.tabs button').forEach(btn => btn.classList.remove('active'));
     document.getElementById(tab).classList.add('active');
     document.querySelector(`.tabs button[onclick="switchTab('${tab}')"]`).classList.add('active');
   }
+
   function loadAll() {
     loadPending();
-    loadActive();
-    loadHistory();
+    // loadActive();
+    // loadHistory();
   }
+
   function loadPending() {
     const container = document.getElementById("pending");
     db.ref("pendingReservations").once("value").then(snapshot => {
-      const data = snapshot.val() || [];
-      container.innerHTML = data.length ? "" : "<p>Aucune demande en attente.</p>";
-      data.forEach((r, i) => {
+      const data = snapshot.val() || {};
+      const keys = Object.keys(data);
+      container.innerHTML = keys.length ? "" : "<p>Aucune demande en attente.</p>";
+
+      keys.forEach(key => {
+        const r = data[key];
         const div = document.createElement("div");
         div.className = "entry";
         div.innerHTML = `
-          <label>Nom:<input value="${r.name}" onchange="editField(${i}, 'name', this.value)"></label>
-          <label>Description:<textarea onchange="editField(${i}, 'description', this.value)">${r.description}</textarea></label>
-          <label>Twitch:<input value="${r.twitch}" onchange="editField(${i}, 'twitch', this.value)"></label>
-          <label>YouTube ID:<input value="${r.youtube}" onchange="editField(${i}, 'youtube', this.value)"></label>
-          <label>Twitter:<input value="${r.twitter}" onchange="editField(${i}, 'twitter', this.value)"></label>
-          <label>Instagram:<input value="${r.instagram}" onchange="editField(${i}, 'instagram', this.value)"></label>
-          <label>Chaîne YouTube:<input value="${r.youtubeLink}" onchange="editField(${i}, 'youtubeLink', this.value)"></label>
-          <label>Durée (heures):<input type="number" min="1" max="48" value="24" id="duration-${i}"></label>
+          <label>Nom:<input value="${r.name}" onchange="editField('${key}', 'name', this.value)"></label>
+          <label>Description:<textarea onchange="editField('${key}', 'description', this.value)">${r.description}</textarea></label>
+          <label>Twitch:<input value="${r.twitch}" onchange="editField('${key}', 'twitch', this.value)"></label>
+          <label>YouTube ID:<input value="${r.youtube}" onchange="editField('${key}', 'youtube', this.value)"></label>
+          <label>Twitter:<input value="${r.twitter}" onchange="editField('${key}', 'twitter', this.value)"></label>
+          <label>Instagram:<input value="${r.instagram}" onchange="editField('${key}', 'instagram', this.value)"></label>
+          <label>Chaîne YouTube:<input value="${r.youtubeLink}" onchange="editField('${key}', 'youtubeLink', this.value)"></label>
+          <label>Durée (heures):<input type="number" min="1" max="48" value="24" id="duration-${key}"></label>
           <div class="info">Soumis le ${new Date(r.submittedAt).toLocaleString()}</div>
           <div class="actions">
-            <button class="approve" onclick="approve(${i})">✅ Valider</button>
-            <button class="reject" onclick="reject(${i})">❌ Refuser</button>
-          </div>`;
+            <button class="approve" onclick="approve('${key}')">✅ Valider</button>
+            <button class="reject" onclick="reject('${key}')">❌ Refuser</button>
+          </div>
+        `;
         container.appendChild(div);
       });
     });
   }
+
+  function editField(key, field, value) {
+    db.ref(`pendingReservations/${key}/${field}`).set(value);
+  }
+
+  window.onload = loadAll;
 </script>
 </body>
 </html>
