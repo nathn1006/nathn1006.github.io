@@ -122,15 +122,9 @@
     const SESSION_KEY = "admin_logged_in";
     const ADMIN_USER = decodeURIComponent((document.cookie.match('(^|;)\\s*admin_user\\s*=\\s*([^;]+)')||[])[2] || "");
 
-    const ADMIN_ROLES = {
-      "admin1": "ADMIN",
-    };
-
-    const role = ADMIN_ROLES[ADMIN_USER] || "lecteur";
-
     if (sessionStorage.getItem("admin_logged_in") !== "true") {
-  window.location.href = "login.html";
-}
+      window.location.href = "login.html";
+    }
 
     function logout() {
       document.cookie = `${SESSION_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
@@ -141,7 +135,7 @@
 
   <div class="admin-label">
     👤 Connecté en tant que <strong id="adminName"></strong>
-    <span id="badge" class="badge"></span>
+    <span id="badge" class="badge">Administrateur</span>
   </div>
   <button class="logout" onclick="logout()">🔓 Se déconnecter</button>
   <h1>🔐 Panneau Admin – Réservations Streamer</h1>
@@ -167,7 +161,6 @@
     const HISTORY_KEY = "reservationHistory";
 
     document.getElementById("adminName").textContent = ADMIN_USER || "Inconnu";
-    document.getElementById("badge").textContent = role === "super" ? "Super Admin" : (role === "mod" ? "Modérateur" : "Lecteur");
 
     function switchTab(tab) {
       document.querySelectorAll('.tab-content').forEach(div => div.classList.remove('active'));
@@ -177,7 +170,7 @@
     }
 
     function loadAll() {
-      if (role !== "lecteur") loadPending();
+      loadPending();
       loadActive();
       loadHistory();
     }
@@ -210,14 +203,12 @@
     }
 
     function editField(index, field, value) {
-      if (role === "lecteur") return;
       const data = JSON.parse(localStorage.getItem(PENDING_KEY)) || [];
       data[index][field] = value;
       localStorage.setItem(PENDING_KEY, JSON.stringify(data));
     }
 
     function approve(index) {
-      if (role === "lecteur") return;
       const pending = JSON.parse(localStorage.getItem(PENDING_KEY)) || [];
       const approved = pending.splice(index, 1)[0];
       const duration = parseInt(document.getElementById(`duration-${index}`).value) || 24;
@@ -232,7 +223,6 @@
     }
 
     function reject(index) {
-      if (role === "lecteur") return;
       const pending = JSON.parse(localStorage.getItem(PENDING_KEY)) || [];
       const rejected = pending.splice(index, 1)[0];
       rejected.status = "refusé";
@@ -270,7 +260,6 @@
     }
 
     function cancelActive() {
-      if (role === "lecteur") return;
       if (confirm("Supprimer la réservation active ?")) {
         const data = JSON.parse(localStorage.getItem(APPROVED_KEY));
         logToHistory({ ...data, status: "annulée", validatedAt: new Date().toISOString() });
