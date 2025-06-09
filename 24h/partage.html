@@ -3,77 +3,91 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Live en cours</title>
-  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-database-compat.js"></script>
+  <title>Réservation Active – Streamer</title>
   <style>
+    :root {
+      --primary: #7700ff;
+      --bg: #0e0e0e;
+      --card: rgba(255, 255, 255, 0.06);
+      --text: #ffffff;
+    }
+
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #0e0e0e;
-      color: white;
+      background: var(--bg);
+      color: var(--text);
       margin: 0;
       padding: 2rem;
-      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     h1 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      color: #7700ff;
+      font-size: 2.5rem;
+      color: var(--primary);
+      text-align: center;
+      margin-bottom: 0.5rem;
     }
 
-    .card {
-      background: rgba(255, 255, 255, 0.05);
+    p.description {
+      color: #ccc;
+      font-size: 1rem;
+      max-width: 600px;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .form-card {
+      background: var(--card);
       padding: 2rem;
       border-radius: 1rem;
-      max-width: 800px;
-      margin: auto;
+      max-width: 600px;
+      width: 100%;
       box-shadow: 0 0 20px #7700ff30;
     }
 
-    iframe {
-      width: 100%;
-      height: 480px;
-      margin-top: 1rem;
+    .entry {
+      margin-bottom: 1rem;
+    }
+
+    .entry strong {
+      color: #fff;
+    }
+
+    .back-btn {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      background: #222;
+      color: white;
       border: none;
-      border-radius: 0.5rem;
-    }
-
-    .social-links a {
-      margin: 0 1rem;
-      color: #66ccff;
-      text-decoration: none;
-      font-size: 1.1rem;
-    }
-
-    #countdown {
-      margin-top: 1rem;
+      border-radius: 5px;
+      padding: 0.5rem 1rem;
       font-size: 1rem;
-      color: #ccc;
+      cursor: pointer;
+      z-index: 100;
+      box-shadow: 0 0 5px #000;
     }
 
-    #noLive {
-      color: #ccc;
-      font-style: italic;
-      margin-top: 4rem;
+    .back-btn:hover {
+      background: #444;
     }
   </style>
 </head>
 <body>
-  <button onclick="window.location.href='index.html'" style="position: absolute; top: 1rem; left: 1rem; background:#333; color:white; padding: 0.5rem 1rem; border-radius: 5px; border: none; cursor: pointer;">⬅️ Retour</button>
-  
-  <div class="card" id="liveCard" style="display:none;">
-    <h1>🎥 En direct avec <span id="streamerName"></span></h1>
-    <div id="streamEmbed"></div>
-    <p id="description"></p>
-    <div class="social-links" id="socialLinks"></div>
-    <div id="countdown"></div>
+  <button onclick="window.location.href='index.html'" class="back-btn">⬅️ Retour</button>
+
+  <h1>🎥 Réservation en cours</h1>
+  <p class="description">Voici le streamer actuellement en vedette sur cette page.</p>
+
+  <div class="form-card" id="content">
+    <p>Chargement...</p>
   </div>
 
-  <div id="noLive" style="display:none;">
-    <p>Aucune réservation active actuellement.</p>
-  </div>
-
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyDnj5lDeKvfbOvvgENjkGfeV7vw6rHlBiU",
@@ -89,62 +103,41 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    function formatTime(ms) {
-      const s = Math.floor(ms / 1000);
-      const h = Math.floor(s / 3600);
-      const m = Math.floor((s % 3600) / 60);
-      const sec = s % 60;
-      return `${h}h ${m}m ${sec}s`;
-    }
+    const content = document.getElementById("content");
 
-    db.ref("approved").once("value", snapshot => {
+    db.ref("reservations").orderByChild("status").equalTo("approuvé").once("value").then(snapshot => {
       const data = snapshot.val();
       if (!data) {
-        document.getElementById("noLive").style.display = "block";
+        content.innerHTML = "<p>Aucune réservation active.</p>";
         return;
       }
 
-      const expiresAt = new Date(data.expiresAt);
       const now = new Date();
+      let found = false;
 
-      if (now < expiresAt) {
-        document.getElementById("liveCard").style.display = "block";
-        document.getElementById("streamerName").textContent = data.name;
-        document.getElementById("description").textContent = data.description;
+      Object.entries(data).forEach(([key, r]) => {
+        if (!r.expiresAt) return;
+        const expires = new Date(r.expiresAt);
+        if (expires > now && !found) {
+          found = true;
 
-        // Liens sociaux
-        const links = document.getElementById("socialLinks");
-        if (data.twitter) links.innerHTML += `<a href="${data.twitter}" target="_blank">Twitter</a>`;
-        if (data.instagram) links.innerHTML += `<a href="${data.instagram}" target="_blank">Instagram</a>`;
-        if (data.youtubeLink) links.innerHTML += `<a href="${data.youtubeLink}" target="_blank">YouTube</a>`;
+          const minsLeft = Math.floor((expires - now) / 60000);
 
-        // Intégration du stream
-        const embed = document.getElementById("streamEmbed");
-        if (data.twitch) {
-          embed.innerHTML = `<iframe src="https://player.twitch.tv/?channel=${data.twitch}&parent=${location.hostname}" allowfullscreen></iframe>`;
-        } else if (data.youtube) {
-          embed.innerHTML = `<iframe src="https://www.youtube.com/embed/${data.youtube}?autoplay=1" allowfullscreen></iframe>`;
-        } else {
-          embed.innerHTML = "<p>Aucun stream en cours.</p>";
+          content.innerHTML = `
+            <div class="entry"><strong>🎙️ Nom :</strong> ${r.name}</div>
+            <div class="entry"><strong>📝 Description :</strong> ${r.description || "Non fournie"}</div>
+            ${r.twitch ? `<div class="entry"><strong>Twitch :</strong> <a href="https://twitch.tv/${r.twitch}" target="_blank">${r.twitch}</a></div>` : ""}
+            ${r.youtube ? `<div class="entry"><strong>YouTube Live :</strong> <a href="https://youtube.com/watch?v=${r.youtube}" target="_blank">${r.youtube}</a></div>` : ""}
+            ${r.youtubeLink ? `<div class="entry"><strong>Chaîne YouTube :</strong> <a href="${r.youtubeLink}" target="_blank">${r.youtubeLink}</a></div>` : ""}
+            ${r.twitter ? `<div class="entry"><strong>Twitter :</strong> <a href="${r.twitter}" target="_blank">${r.twitter}</a></div>` : ""}
+            ${r.instagram ? `<div class="entry"><strong>Instagram :</strong> <a href="${r.instagram}" target="_blank">${r.instagram}</a></div>` : ""}
+            <div class="entry"><strong>⏳ Expire dans :</strong> ${minsLeft} minutes</div>
+          `;
         }
+      });
 
-        // Compte à rebours
-        const countdown = document.getElementById("countdown");
-        function updateCountdown() {
-          const now = new Date();
-          const diff = expiresAt - now;
-          if (diff <= 0) {
-            countdown.textContent = "⛔ Expiré";
-            document.getElementById("liveCard").style.display = "none";
-            document.getElementById("noLive").style.display = "block";
-            return;
-          }
-          countdown.textContent = `🕒 Temps restant : ${formatTime(diff)}`;
-        }
-        updateCountdown();
-        setInterval(updateCountdown, 1000);
-      } else {
-        document.getElementById("noLive").style.display = "block";
+      if (!found) {
+        content.innerHTML = "<p>Aucune réservation active.</p>";
       }
     });
   </script>
