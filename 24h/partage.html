@@ -7,9 +7,9 @@
   <style>
     :root {
       --primary: #7700ff;
-      --bg: #0e0e0e;
-      --card: rgba(255, 255, 255, 0.06);
-      --text: #ffffff;
+      --bg: #ffffff;
+      --card: #f4f4f4;
+      --text: #111;
     }
 
     body {
@@ -31,7 +31,7 @@
     }
 
     p.description {
-      color: #ccc;
+      color: #555;
       font-size: 1rem;
       max-width: 600px;
       text-align: center;
@@ -44,7 +44,7 @@
       border-radius: 1rem;
       max-width: 800px;
       width: 100%;
-      box-shadow: 0 0 20px #7700ff30;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
     }
 
     .entry {
@@ -52,26 +52,26 @@
     }
 
     .entry strong {
-      color: #fff;
+      color: var(--text);
     }
 
     .back-btn {
       position: absolute;
       top: 1rem;
       left: 1rem;
-      background: #222;
-      color: white;
+      background: #ddd;
+      color: #000;
       border: none;
       border-radius: 5px;
       padding: 0.5rem 1rem;
       font-size: 1rem;
       cursor: pointer;
       z-index: 100;
-      box-shadow: 0 0 5px #000;
+      box-shadow: 0 0 5px #aaa;
     }
 
     .back-btn:hover {
-      background: #444;
+      background: #ccc;
     }
 
     iframe {
@@ -81,17 +81,32 @@
       margin-top: 1rem;
       border: none;
       border-radius: 0.5rem;
-      box-shadow: 0 0 10px #000;
+      box-shadow: 0 0 10px #bbb;
     }
 
     .countdown {
       font-size: 1.1rem;
-      color: #ccc;
+      color: #333;
       margin-top: 1rem;
     }
 
     .countdown.warning {
-      color: #ff4444;
+      color: #c40000;
+    }
+
+    .report-btn {
+      margin-top: 1.5rem;
+      background-color: #ff4444;
+      color: white;
+      font-weight: bold;
+      border: none;
+      padding: 0.7rem 1.2rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .report-btn:hover {
+      background-color: #cc0000;
     }
   </style>
 </head>
@@ -122,7 +137,6 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-
     const content = document.getElementById("content");
 
     db.ref("reservations").orderByChild("status").equalTo("approuvé").once("value").then(snapshot => {
@@ -141,7 +155,6 @@
         if (expires > now && !found) {
           found = true;
 
-          const minsLeft = Math.floor((expires - now) / 60000);
           let html = `
             <div class="entry"><strong>🎙️ Nom :</strong> ${r.name}</div>
             <div class="entry"><strong>📝 Description :</strong> ${r.description || "Non fournie"}</div>
@@ -162,18 +175,21 @@
             html += `<div class="entry"><strong>Instagram :</strong> <a href="${r.instagram}" target="_blank">${r.instagram}</a></div>`;
           }
 
-          html += `<div class="countdown" id="countdown"></div>`;
+          html += `
+            <div class="countdown" id="countdown"></div>
+            <button class="report-btn" onclick="reportStreamer('${key}')">🚩 Signaler ce contenu</button>
+          `;
+
           content.innerHTML = html;
 
+          // Timer
           const countdownEl = document.getElementById("countdown");
-
           function updateCountdown() {
             const now = new Date();
             const diff = expires - now;
             if (diff <= 0) {
               countdownEl.textContent = "Expiré";
-              countdownEl.classList.remove("warning");
-              location.reload(); // 🔁 Recharge automatique à l'expiration
+              location.reload();
               return;
             }
             const mins = Math.floor(diff / 60000);
@@ -182,7 +198,6 @@
             countdownEl.classList.toggle("warning", mins < 10);
             setTimeout(updateCountdown, 1000);
           }
-
           updateCountdown();
         }
       });
@@ -191,6 +206,16 @@
         content.innerHTML = "<p>Aucune réservation active.</p>";
       }
     });
+
+    function reportStreamer(reservationId) {
+      db.ref(`reports/${reservationId}`).set({
+        reportedAt: new Date().toISOString()
+      }).then(() => {
+        alert("🚨 Merci, ce contenu a été signalé.");
+      }).catch((err) => {
+        alert("Erreur lors du signalement : " + err.message);
+      });
+    }
   </script>
 </body>
 </html>
