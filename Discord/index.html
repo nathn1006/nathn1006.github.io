@@ -84,15 +84,6 @@
     <button onclick="loginWithDiscord()">Se connecter avec Discord</button>
   </div>
 
-  <div id="villageGame" class="village-game" style="display:none;">
-    <h2>🏘️ Jeu du Village</h2>
-    <p>Deux équipes s'affrontent dans un village. Complétez les missions pour gagner des points !</p>
-    <div class="team" id="teamA">🔵 Équipe A : <span id="teamA-users"></span></div>
-    <div class="team" id="teamB">🔴 Équipe B : <span id="teamB-users"></span></div>
-    <button onclick="addMissionPoint('A')">+1 Point à l'équipe A</button>
-    <button onclick="addMissionPoint('B')">+1 Point à l'équipe B</button>
-    <p>Score : <span id="scoreA">0</span> - <span id="scoreB">0</span></p>
-  </div>
 
   <script>
     const CLIENT_ID = "1381594849576226836";
@@ -125,48 +116,7 @@
             </div>
           `;
 
-          // Attribuer à une équipe aléatoire
-          const team = Math.random() > 0.5 ? "A" : "B";
-          db.ref(`villageGame/${team}/${user.id}`).set({
-            username: user.username,
-            joinedAt: new Date().toISOString()
-          });
 
-          document.getElementById("villageGame").style.display = "block";
-
-          // Chargement des équipes
-          db.ref("villageGame/A").on("value", snap => {
-            const data = snap.val() || {};
-            document.getElementById("teamA-users").textContent = Object.values(data).map(u => u.username).join(", ") || "aucun";
-          });
-
-          db.ref("villageGame/B").on("value", snap => {
-            const data = snap.val() || {};
-            document.getElementById("teamB-users").textContent = Object.values(data).map(u => u.username).join(", ") || "aucun";
-          });
-
-          // Charger score
-          db.ref("villageGame/score").on("value", snap => {
-            const score = snap.val() || { A: 0, B: 0 };
-            document.getElementById("scoreA").textContent = score.A || 0;
-            document.getElementById("scoreB").textContent = score.B || 0;
-          });
-        })
-        .catch(err => {
-          document.getElementById("card").innerHTML = `<p style='color:red;'>Erreur de connexion Discord.</p>`;
-          console.error(err);
-        });
-      }
-    }
-
-    function addMissionPoint(team) {
-      const scoreRef = db.ref("villageGame/score");
-      scoreRef.transaction(current => {
-        if (!current) current = { A: 0, B: 0 };
-        current[team] = (current[team] || 0) + 1;
-        return current;
-      });
-    }
   </script>
 </body>
 </html>
