@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connexion Discord</title>
+  <style>
+    body {
+      background: #0e0e0e;
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      color: #7700ff;
+    }
+    .form-card {
+      background: rgba(255, 255, 255, 0.06);
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 0 20px #7700ff30;
+      text-align: center;
+    }
+    .form-card button {
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
+      font-weight: bold;
+      background: #7700ff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .form-card button:hover {
+      background: #5e00c7;
+    }
+    .user-info img {
+      width: 100px;
+      border-radius: 50%;
+    }
+    .user-info h2 {
+      margin: 0.5rem 0 0 0;
+    }
+  </style>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDnj5lDeKvfbOvvgENjkGfeV7vw6rHlBiU",
+      authDomain: "legendaweb-c8ec1.firebaseapp.com",
+      databaseURL: "https://legendaweb-c8ec1-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "legendaweb-c8ec1",
+      storageBucket: "legendaweb-c8ec1.appspot.com",
+      messagingSenderId: "930376439071",
+      appId: "1:930376439071:web:09f87f27976022e4c00c2a",
+      measurementId: "G-D7HDC71PL7"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+  </script>
+</head>
+<body>
+  <h1>Connexion Discord</h1>
+  <div class="form-card" id="card">
+    <button onclick="loginWithDiscord()">Se connecter avec Discord</button>
+  </div>
+
+  <script>
+    const CLIENT_ID = "1381594849576226836"; // remplace par ton vrai client ID Discord
+    const REDIRECT_URI = window.location.origin + window.location.pathname;
+
+    function loginWithDiscord() {
+      const url = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=identify`;
+      window.location.href = url;
+    }
+
+    window.onload = () => {
+      const hash = window.location.hash;
+      if (hash.includes("access_token")) {
+        const params = new URLSearchParams(hash.substring(1));
+        const accessToken = params.get("access_token");
+
+        fetch("https://discord.com/api/users/@me", {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        })
+        .then(res => res.json())
+        .then(user => {
+          document.getElementById("card").innerHTML = `
+            <div class="user-info">
+              <img src="https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png" alt="avatar">
+              <h2>${user.username}#${user.discriminator}</h2>
+              <p>ID : ${user.id}</p>
+              <p>✅ Connecté avec succès !</p>
+            </div>
+          `;
+
+          db.ref(`discordUsers/${user.id}`).set({
+            username: user.username,
+            discriminator: user.discriminator,
+            avatar: user.avatar,
+            connectedAt: new Date().toISOString()
+          });
+        })
+        .catch(err => {
+          document.getElementById("card").innerHTML = `<p style='color:red;'>Erreur de connexion Discord.</p>`;
+          console.error(err);
+        });
+      }
+    }
+  </script>
+</body>
+</html>
