@@ -3,15 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🎥 Streamer en vedette</title>
+  <title>Réservation Active – Streamer</title>
   <style>
     :root {
       --primary: #7700ff;
-      --bg: #0d0d0d;
-      --card: #1a1a1a;
+      --bg: #0e0e0e;
+      --card: rgba(255, 255, 255, 0.06);
       --text: #ffffff;
-      --muted: #bbbbbb;
-      --danger: #ff4444;
     }
 
     body {
@@ -26,14 +24,14 @@
     }
 
     h1 {
-      font-size: 2.4rem;
+      font-size: 2.5rem;
       color: var(--primary);
       text-align: center;
       margin-bottom: 0.5rem;
     }
 
     p.description {
-      color: var(--muted);
+      color: #ccc;
       font-size: 1rem;
       max-width: 600px;
       text-align: center;
@@ -44,21 +42,17 @@
       background: var(--card);
       padding: 2rem;
       border-radius: 1rem;
-      max-width: 720px;
+      max-width: 800px;
       width: 100%;
-      box-shadow: 0 0 20px #7700ff33;
-      animation: fadeIn 0.3s ease;
+      box-shadow: 0 0 20px #7700ff30;
     }
 
     .entry {
       margin-bottom: 1rem;
-      font-size: 1.05rem;
     }
 
     .entry strong {
-      display: block;
-      margin-bottom: 0.2rem;
-      color: #ddd;
+      color: #fff;
     }
 
     .back-btn {
@@ -72,6 +66,7 @@
       padding: 0.5rem 1rem;
       font-size: 1rem;
       cursor: pointer;
+      z-index: 100;
       box-shadow: 0 0 5px #000;
     }
 
@@ -79,19 +74,9 @@
       background: #444;
     }
 
-    .countdown {
-      font-weight: bold;
-      font-size: 1.2rem;
-      margin-top: 0.5rem;
-    }
-
-    .countdown.warning {
-      color: var(--danger);
-      animation: blink 1s infinite;
-    }
-
     iframe {
       width: 100%;
+      max-width: 720px;
       height: 405px;
       margin-top: 1rem;
       border: none;
@@ -99,26 +84,22 @@
       box-shadow: 0 0 10px #000;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+    .countdown {
+      font-size: 1.1rem;
+      color: #ccc;
+      margin-top: 1rem;
     }
 
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-
-    @media (max-width: 768px) {
-      iframe { height: 315px; }
+    .countdown.warning {
+      color: #ff4444;
     }
   </style>
 </head>
 <body>
   <button onclick="window.location.href='index.html'" class="back-btn">⬅️ Retour</button>
 
-  <h1>🎥 Stream en cours</h1>
-  <p class="description">Le créateur suivant a actuellement la page réservée :</p>
+  <h1>🎥 Réservation en cours</h1>
+  <p class="description">Voici le streamer actuellement en vedette sur cette page.</p>
 
   <div class="form-card" id="content">
     <p>Chargement...</p>
@@ -135,11 +116,13 @@
       projectId: "legendaweb-c8ec1",
       storageBucket: "legendaweb-c8ec1.appspot.com",
       messagingSenderId: "930376439071",
-      appId: "1:930376439071:web:09f87f27976022e4c00c2a"
+      appId: "1:930376439071:web:09f87f27976022e4c00c2a",
+      measurementId: "G-D7HDC71PL7"
     };
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+
     const content = document.getElementById("content");
 
     db.ref("reservations").orderByChild("status").equalTo("approuvé").once("value").then(snapshot => {
@@ -158,7 +141,7 @@
         if (expires > now && !found) {
           found = true;
 
-          const countdownId = "countdown";
+          const minsLeft = Math.floor((expires - now) / 60000);
           let html = `
             <div class="entry"><strong>🎙️ Nom :</strong> ${r.name}</div>
             <div class="entry"><strong>📝 Description :</strong> ${r.description || "Non fournie"}</div>
@@ -171,10 +154,6 @@
             `;
           }
 
-          if (r.youtubeLink) {
-            html += `<div class="entry"><strong>Chaîne YouTube :</strong> <a href="${r.youtubeLink}" target="_blank">${r.youtubeLink}</a></div>`;
-          }
-
           if (r.twitter) {
             html += `<div class="entry"><strong>Twitter :</strong> <a href="${r.twitter}" target="_blank">${r.twitter}</a></div>`;
           }
@@ -183,26 +162,23 @@
             html += `<div class="entry"><strong>Instagram :</strong> <a href="${r.instagram}" target="_blank">${r.instagram}</a></div>`;
           }
 
-          html += `
-            <div class="entry"><strong>⏳ Temps restant :</strong>
-              <div id="${countdownId}" class="countdown">Calcul en cours...</div>
-            </div>
-          `;
-
+          html += `<div class="countdown" id="countdown"></div>`;
           content.innerHTML = html;
 
-          const countdownEl = document.getElementById(countdownId);
+          const countdownEl = document.getElementById("countdown");
+
           function updateCountdown() {
             const now = new Date();
             const diff = expires - now;
             if (diff <= 0) {
               countdownEl.textContent = "Expiré";
               countdownEl.classList.remove("warning");
+              location.reload(); // 🔁 Recharge automatique à l'expiration
               return;
             }
             const mins = Math.floor(diff / 60000);
             const secs = Math.floor((diff % 60000) / 1000);
-            countdownEl.textContent = `${mins}m ${secs}s`;
+            countdownEl.textContent = `⏳ Expire dans : ${mins}m ${secs}s`;
             countdownEl.classList.toggle("warning", mins < 10);
             setTimeout(updateCountdown, 1000);
           }
