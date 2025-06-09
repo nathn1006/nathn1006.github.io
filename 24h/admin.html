@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin – Gestion des Réservations</title>
 
-  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database-compat.js"></script>
 
@@ -57,6 +56,154 @@
     document.cookie = `admin_user=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
     window.location.href = "login.html";
   }
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-content').forEach(div => div.classList.remove('active'));
+    document.querySelectorAll('.tabs button').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(tab).classList.add('active');
+    document.querySelector(`.tabs button[onclick="switchTab('${tab}')"]`).classList.add('active');
+    if (tab === 'reports') loadReports();
+  }
+
+  function loadPending() {
+    const container = document.getElementById("pending");
+    db.ref("reservations").orderByChild("status").equalTo("en_attente").once("value").then(snapshot => {
+      const data = snapshot.val();
+      container.innerHTML = data ? "" : "<p>Aucune demande en attente.</p>";
+
+      if (data) {
+        Object.entries(data).forEach(([key, r]) => {
+          const div = document.createElement("div");
+          div.className = "entry";
+          div.innerHTML = `
+            <label>Nom:<input value="${r.name}" onchange="editField('${key}', 'name', this.value)"></label>
+            <label>Description:<textarea onchange="editField('${key}', 'description', this.value)">${r.description || ""}</textarea></label>
+            <label>Twitch:<input value="${r.twitch || ""}" onchange="editField('${key}', 'twitch', this.value)"></label>
+            <label>YouTube ID:<input value="${r.youtube || ""}" onchange="editField('${key}', 'youtube', this.value)"></label>
+            <label>Twitter:<input value="${r.twitter || ""}" onchange="editField('${key}', 'twitter', this.value)"></label>
+            <label>Instagram:<input value="${r.instagram || ""}" onchange="editField('${key}', 'instagram', this.value)"></label>
+            <label>Chaîne YouTube:<input value="${r.youtubeLink || ""}" onchange="editField('${key}', 'youtubeLink', this.value)"></label>
+            <label>Durée (heures):<input type="number" min="1" max="48" value="24" id="duration-${key}"></label>
+            <div class="info">Soumis le ${r.submittedAt ? new Date(r.submittedAt).toLocaleString() : "N/A"}</div>
+            <div class="actions">
+              <button class="approve" onclick="approve('${key}')">✅ Valider</button>
+              <button class="reject" onclick="reject('${key}')">❌ Refuser</button>
+              <button class="report" onclick="report('${key}')">🚩 Signaler</button>
+            </div>
+          `;
+          container.appendChild(div);
+        });
+      }
+    });
+  }
+
+  function loadActive() {
+    const container = document.getElementById("active");
+    container.innerHTML = "";
+    db.ref("reservations").orderByChild("status").equalTo("approuvé").once("value").then(snapshot => {
+      const data = snapshot.val();
+      if (!data) {
+        container.innerHTML = "<p>Aucune réservation en cours.</p>";
+        return;
+      }
+      Object.entries(data).forEach(([key, r]) => {
+        const expires = new Date(r.expiresAt);
+        const now = new Date();
+        if (expires <= now) {
+          db.ref(`reservations/${key}`).update({ status: "annulée" });
+          return;
+        }
+        const div = document.createElement("div");
+        div.className = "entry";
+        div.innerHTML = `
+          <strong>${r.name}</strong><br>
+          <div class="info">Expire le ${expires.toLocaleString()}</div>
+          <div class="actions">
+            <button class="cancel" onclick="cancelActive('${key}')">🛑 Annuler</button>
+            <button class="report" onclick="report('${key}')">🚩 Signaler</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    });
+  }
+
+  function loadReports() {
+    const container = document.getElementById("reportContent");
+    container.innerHTML = "<p>Chargement des signalements...</p>";
+    db.ref("reports").once("value").then(snapshot => {
+      const data = snapshot.val();
+      container.innerHTML = data ? "" : "<p>Aucun signalement.</p>";
+      if (data) {
+        Object.entries(data).forEach(([key, r]) => {
+          const div = document.createElement("div");
+          div.className = "entry";
+          div.innerHTML = `
+            <strong>Réservation ID:</strong> ${key}<br>
+            <div class="info">Signalé le ${new Date(r.reportedAt).toLocaleString()}</div>
+            ${r.reason ? `<div class="info">Raison: ${r.reason}</div>` : ""}
+          `;
+          container.appendChild(div);
+        });
+      }
+    });
+  }
+
+  function approve(key) {
+    const duration = parseInt(document.getElementById(`duration-${key}`).value) || 24;
+    const expiresAt = new Date(Date.now() + duration * 3600000).toISOString();
+    const now = new Date().toISOString();
+    db.ref(`reservations/${key}`).once("value").then(snapshot => {
+      const data = snapshot.val();
+      if (!data) return;
+      const updates = { ...data, status: "approuvé", validatedAt: now, expiresAt };
+      db.ref(`reservations/${key}`).update(updates);
+      db.ref(`approvedReservations/${key}`).set(updates);
+      loadAll();
+    });
+  }
+
+  function reject(key) {
+    db.ref(`reservations/${key}`).update({ status: "refusé", validatedAt: new Date().toISOString() });
+    loadAll();
+  }
+
+  function cancelActive(key) {
+    if (confirm("Annuler cette réservation ?")) {
+      db.ref(`reservations/${key}`).remove();
+      loadAll();
+    }
+  }
+
+  function report(key) {
+    const reportedAt = new Date().toISOString();
+    db.ref(`reports/${key}`).set({ reportedAt });
+    alert("🚩 Signalement enregistré.");
+  }
+
+  function editField(key, field, value) {
+    db.ref(`reservations/${key}/${field}`).set(value);
+  }
+
+  function exportHistory() {
+    db.ref("reservations").once("value").then(snapshot => {
+      const data = snapshot.val();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "historique_reservations.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  }
+
+  function loadAll() {
+    loadPending();
+    loadActive();
+  }
+
+  window.onload = loadAll;
 </script>
 <div class="admin-label">👤 Connecté en tant que <strong id="adminName"></strong> <span id="badge" class="badge">Administrateur</span></div>
 <button class="logout" onclick="logout()">🔓 Se déconnecter</button>
@@ -76,47 +223,5 @@
 <div id="reports" class="tab-content">
   <div id="reportContent"></div>
 </div>
-<script>
-  document.getElementById("adminName").textContent = ADMIN_USER || "Inconnu";
-
-  function switchTab(tab) {
-    document.querySelectorAll('.tab-content').forEach(div => div.classList.remove('active'));
-    document.querySelectorAll('.tabs button').forEach(btn => btn.classList.remove('active'));
-    document.getElementById(tab).classList.add('active');
-    document.querySelector(`.tabs button[onclick="switchTab('${tab}')"]`).classList.add('active');
-    if (tab === 'reports') loadReports();
-  }
-
-  function loadAll() {
-    loadPending();
-    loadActive();
-  }
-
-  function loadReports() {
-    const container = document.getElementById("reportContent");
-    container.innerHTML = "<p>Chargement des signalements...</p>";
-    db.ref("reports").once("value").then(snapshot => {
-      const data = snapshot.val();
-      if (!data) {
-        container.innerHTML = "<p>Aucun signalement.</p>";
-        return;
-      }
-      container.innerHTML = "";
-      Object.entries(data).forEach(([key, r]) => {
-        const div = document.createElement("div");
-        div.className = "entry";
-        div.innerHTML = `
-          <strong>Réservation ID:</strong> ${key}<br>
-          <div class="info">Signalé le ${new Date(r.reportedAt).toLocaleString()}</div>
-        `;
-        container.appendChild(div);
-      });
-    });
-  }
-
-  // ... conserve les autres fonctions existantes (loadPending, loadActive, etc.) ...
-
-  window.onload = loadAll;
-</script>
 </body>
 </html>
