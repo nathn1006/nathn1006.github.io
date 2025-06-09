@@ -7,9 +7,9 @@
   <style>
     :root {
       --primary: #7700ff;
-      --bg: #f9f9f9;
-      --card: #ffffff;
-      --text: #111;
+      --bg: #0e0e0e;
+      --card: rgba(255, 255, 255, 0.06);
+      --text: #ffffff;
     }
 
     body {
@@ -31,7 +31,7 @@
     }
 
     p.description {
-      color: #555;
+      color: #ccc;
       font-size: 1rem;
       max-width: 600px;
       text-align: center;
@@ -44,8 +44,7 @@
       border-radius: 1rem;
       max-width: 800px;
       width: 100%;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.1);
-      transition: all 0.3s ease-in-out;
+      box-shadow: 0 0 20px #7700ff30;
     }
 
     .entry {
@@ -60,19 +59,19 @@
       position: absolute;
       top: 1rem;
       left: 1rem;
-      background: #ddd;
-      color: #000;
+      background: #222;
+      color: white;
       border: none;
       border-radius: 5px;
       padding: 0.5rem 1rem;
       font-size: 1rem;
       cursor: pointer;
       z-index: 100;
-      box-shadow: 0 0 5px #aaa;
+      box-shadow: 0 0 5px #000;
     }
 
     .back-btn:hover {
-      background: #ccc;
+      background: #444;
     }
 
     iframe {
@@ -82,17 +81,17 @@
       margin-top: 1rem;
       border: none;
       border-radius: 0.5rem;
-      box-shadow: 0 0 10px #bbb;
+      box-shadow: 0 0 10px #000;
     }
 
     .countdown {
       font-size: 1.1rem;
-      color: #333;
+      color: #ccc;
       margin-top: 1rem;
     }
 
     .countdown.warning {
-      color: #c40000;
+      color: #ff4444;
     }
 
     .report-btn {
@@ -119,8 +118,10 @@
       padding: 0.7rem;
       font-size: 1rem;
       border-radius: 5px;
-      border: 1px solid #ccc;
+      border: 1px solid #555;
       resize: vertical;
+      background: #1a1a1a;
+      color: white;
     }
   </style>
 </head>
@@ -199,7 +200,6 @@
 
           content.innerHTML = html;
 
-          // Timer
           const countdownEl = document.getElementById("countdown");
           function updateCountdown() {
             const now = new Date();
