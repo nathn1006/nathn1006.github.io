@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Réservation Active – Streamer</title>
+  <title>🎥 Streamer en vedette</title>
   <style>
     :root {
       --primary: #7700ff;
-      --bg: #0e0e0e;
-      --card: rgba(255, 255, 255, 0.06);
+      --bg: #0d0d0d;
+      --card: #1a1a1a;
       --text: #ffffff;
+      --muted: #bbbbbb;
     }
 
     body {
@@ -24,14 +25,14 @@
     }
 
     h1 {
-      font-size: 2.5rem;
+      font-size: 2.4rem;
       color: var(--primary);
       text-align: center;
       margin-bottom: 0.5rem;
     }
 
     p.description {
-      color: #ccc;
+      color: var(--muted);
       font-size: 1rem;
       max-width: 600px;
       text-align: center;
@@ -42,17 +43,21 @@
       background: var(--card);
       padding: 2rem;
       border-radius: 1rem;
-      max-width: 800px;
+      max-width: 720px;
       width: 100%;
-      box-shadow: 0 0 20px #7700ff30;
+      box-shadow: 0 0 20px #7700ff33;
+      animation: fadeIn 0.3s ease;
     }
 
     .entry {
       margin-bottom: 1rem;
+      font-size: 1.05rem;
     }
 
     .entry strong {
-      color: #fff;
+      display: block;
+      margin-bottom: 0.2rem;
+      color: #ddd;
     }
 
     .back-btn {
@@ -66,7 +71,6 @@
       padding: 0.5rem 1rem;
       font-size: 1rem;
       cursor: pointer;
-      z-index: 100;
       box-shadow: 0 0 5px #000;
     }
 
@@ -76,20 +80,28 @@
 
     iframe {
       width: 100%;
-      max-width: 720px;
       height: 405px;
       margin-top: 1rem;
       border: none;
       border-radius: 0.5rem;
       box-shadow: 0 0 10px #000;
     }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+      iframe { height: 315px; }
+    }
   </style>
 </head>
 <body>
   <button onclick="window.location.href='index.html'" class="back-btn">⬅️ Retour</button>
 
-  <h1>🎥 Réservation en cours</h1>
-  <p class="description">Voici le streamer actuellement en vedette sur cette page.</p>
+  <h1>🎥 Stream en cours</h1>
+  <p class="description">Le créateur suivant a actuellement la page réservée :</p>
 
   <div class="form-card" id="content">
     <p>Chargement...</p>
@@ -137,19 +149,10 @@
             <div class="entry"><strong>📝 Description :</strong> ${r.description || "Non fournie"}</div>
           `;
 
-          // Twitch embed
           if (r.twitch) {
             html += `
               <div class="entry"><strong>Twitch :</strong> <a href="https://twitch.tv/${r.twitch}" target="_blank">${r.twitch}</a></div>
               <iframe src="https://player.twitch.tv/?channel=${r.twitch}&parent=${location.hostname}&muted=true" allowfullscreen></iframe>
-            `;
-          }
-
-          // YouTube embed
-          if (r.youtube) {
-            html += `
-              <div class="entry"><strong>YouTube Live :</strong> <a href="https://youtube.com/watch?v=${r.youtube}" target="_blank">${r.youtube}</a></div>
-              <iframe src="https://www.youtube.com/embed/${r.youtube}" allowfullscreen></iframe>
             `;
           }
 
@@ -166,7 +169,6 @@
           }
 
           html += `<div class="entry"><strong>⏳ Expire dans :</strong> ${minsLeft} minutes</div>`;
-
           content.innerHTML = html;
         }
       });
