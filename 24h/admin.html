@@ -4,195 +4,315 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin – Gestion des Réservations</title>
-  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-database-compat.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; background: #111; color: white; margin: 0; padding: 2rem; }
-    h1 { color: #7700ff; text-align: center; }
-    .logout { position: absolute; top: 1rem; right: 1rem; }
-    .admin-label { position: absolute; top: 1rem; left: 1rem; color: #ccc; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
+      margin: 0;
+      padding: 2rem;
+    }
+
+    h1 {
+      color: #7700ff;
+      text-align: center;
+    }
+
+    .logout {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+    }
+
+    .admin-label {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      color: #ccc;
+    }
+
     .badge {
-      background: gold; color: black;
-      padding: 0.1rem 0.4rem; border-radius: 0.3rem;
-      font-size: 0.75rem; margin-left: 0.5rem;
+      background: gold;
+      color: black;
+      padding: 0.1rem 0.4rem;
+      border-radius: 0.3rem;
+      font-size: 0.75rem;
+      margin-left: 0.5rem;
     }
+
     .tabs {
-      display: flex; justify-content: center;
-      gap: 1rem; margin: 1rem 0;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin: 1rem 0;
     }
+
     .tabs button {
-      background: #222; color: white;
-      padding: 0.5rem 1.2rem; border: 1px solid #7700ff;
-      border-radius: 5px; cursor: pointer;
+      background: #222;
+      color: white;
+      padding: 0.5rem 1.2rem;
+      border: 1px solid #7700ff;
+      border-radius: 5px;
+      cursor: pointer;
     }
-    .tabs button.active { background: #7700ff; }
+
+    .tabs button.active {
+      background: #7700ff;
+    }
+
     .tab-content {
-      display: none; max-width: 800px;
-      margin: auto; background: #1a1a1a;
-      border-radius: 1rem; padding: 1.5rem;
+      display: none;
+      max-width: 800px;
+      margin: auto;
+      background: #1a1a1a;
+      border-radius: 1rem;
+      padding: 1.5rem;
       box-shadow: 0 0 10px #7700ff55;
     }
-    .tab-content.active { display: block; }
-    .entry {
-      background: #2a2a2a; padding: 1rem;
-      border-radius: 0.5rem; margin-bottom: 1rem;
+
+    .tab-content.active {
+      display: block;
     }
-    .actions { margin-top: 0.5rem; display: flex; gap: 1rem; flex-wrap: wrap; }
+
+    .entry {
+      background: #2a2a2a;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .entry input, .entry textarea {
+      width: 100%;
+      margin-top: 0.3rem;
+      padding: 0.5rem;
+      background: #111;
+      color: white;
+      border: 1px solid #444;
+      border-radius: 5px;
+    }
+
+    .actions {
+      margin-top: 0.5rem;
+      display: flex;
+      gap: 1rem;
+    }
+
     button.approve { background: #00cc66; }
     button.reject { background: #cc0033; }
     button.cancel { background: #cc9900; }
     button.export { margin-top: 1rem; background: #3366ff; }
+
     button {
-      padding: 0.5rem 1rem; border: none;
-      color: white; font-weight: bold;
-      border-radius: 5px; cursor: pointer;
+      padding: 0.5rem 1rem;
+      border: none;
+      color: white;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
     }
-    .info { font-size: 0.9em; color: #ccc; }
+
+    .info {
+      font-size: 0.9em;
+      color: #ccc;
+    }
   </style>
 </head>
 <body>
-<script>
-  const SESSION_KEY = "admin_logged_in";
-  const ADMIN_USER = decodeURIComponent((document.cookie.match('(^|;)\\s*admin_user\\s*=\\s*([^;]+)')||[])[2] || "");
-  const ADMIN_ROLES = { "admin1": "super", "admin2": "mod", "admin3": "lecteur" };
-  const role = ADMIN_ROLES[ADMIN_USER] || "lecteur";
-  if (sessionStorage.getItem("admin_logged_in") !== "true") window.location.href = "login.html";
+  <script>
+    const SESSION_KEY = "admin_logged_in";
+    const ADMIN_USER = decodeURIComponent((document.cookie.match('(^|;)\\s*admin_user\\s*=\\s*([^;]+)')||[])[2] || "");
 
-  function logout() {
-    document.cookie = `${SESSION_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-    document.cookie = `admin_user=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-    window.location.href = "login.html";
-  }
-</script>
+    const ADMIN_ROLES = {
+      "admin1": "ADMIN",
+    };
 
-<div class="admin-label">
-  👤 Connecté en tant que <strong id="adminName"></strong>
-  <span id="badge" class="badge"></span>
-</div>
-<button class="logout" onclick="logout()">🔓 Se déconnecter</button>
-<h1>🔐 Panneau Admin – Réservations Streamer</h1>
-<div class="tabs">
-  <button onclick="switchTab('pending')" class="active">📥 Demandes</button>
-  <button onclick="switchTab('active')">🎥 Réservation actuelle</button>
-</div>
-<div id="pending" class="tab-content active"></div>
-<div id="active" class="tab-content"></div>
+    const role = ADMIN_ROLES[ADMIN_USER] || "lecteur";
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyDnj5lDeKvfbOvvgENjkGfeV7vw6rHlBiU",
-    authDomain: "legendaweb-c8ec1.firebaseapp.com",
-    databaseURL: "https://legendaweb-c8ec1-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "legendaweb-c8ec1",
-    storageBucket: "legendaweb-c8ec1.appspot.com",
-    messagingSenderId: "930376439071",
-    appId: "1:930376439071:web:09f87f27976022e4c00c2a",
-    measurementId: "G-D7HDC71PL7"
-  };
+    if (sessionStorage.getItem("admin_logged_in") !== "true") {
+  window.location.href = "login.html";
+}
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
+    function logout() {
+      document.cookie = `${SESSION_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+      document.cookie = `admin_user=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+      window.location.href = "login.html";
+    }
+  </script>
 
-  document.getElementById("adminName").textContent = ADMIN_USER || "Inconnu";
-  document.getElementById("badge").textContent = role === "super" ? "Super Admin" : (role === "mod" ? "Modérateur" : "Lecteur");
+  <div class="admin-label">
+    👤 Connecté en tant que <strong id="adminName"></strong>
+    <span id="badge" class="badge"></span>
+  </div>
+  <button class="logout" onclick="logout()">🔓 Se déconnecter</button>
+  <h1>🔐 Panneau Admin – Réservations Streamer</h1>
 
-  function switchTab(tab) {
-    document.querySelectorAll('.tab-content').forEach(div => div.classList.remove('active'));
-    document.querySelectorAll('.tabs button').forEach(btn => btn.classList.remove('active'));
-    document.getElementById(tab).classList.add('active');
-    document.querySelector(`.tabs button[onclick="switchTab('${tab}')"]`).classList.add('active');
-  }
+  <div class="tabs">
+    <button onclick="switchTab('pending')" class="active">📥 Demandes</button>
+    <button onclick="switchTab('active')">🎥 Réservation actuelle</button>
+    <button onclick="switchTab('history')">📜 Historique</button>
+  </div>
 
-  function loadAll() {
-    loadFirebaseReservations();
-    loadApproved();
-  }
+  <div id="pending" class="tab-content active"></div>
+  <div id="active" class="tab-content"></div>
+  <div id="history" class="tab-content">
+    <div style="text-align: right;">
+      <button class="export" onclick="exportHistory()">📁 Exporter JSON</button>
+    </div>
+    <div id="historyContent"></div>
+  </div>
 
-  function loadFirebaseReservations() {
-    const container = document.getElementById("pending");
-    container.innerHTML = "Chargement...";
-    db.ref("reservations").once("value", snapshot => {
-      const data = snapshot.val();
-      container.innerHTML = data ? "" : "<p>Aucune demande.</p>";
-      if (!data) return;
+  <script>
+    const PENDING_KEY = "pendingReservations";
+    const APPROVED_KEY = "approvedReservation";
+    const HISTORY_KEY = "reservationHistory";
 
-      Object.entries(data).forEach(([key, r]) => {
+    document.getElementById("adminName").textContent = ADMIN_USER || "Inconnu";
+    document.getElementById("badge").textContent = role === "super" ? "Super Admin" : (role === "mod" ? "Modérateur" : "Lecteur");
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-content').forEach(div => div.classList.remove('active'));
+      document.querySelectorAll('.tabs button').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(tab).classList.add('active');
+      document.querySelector(`.tabs button[onclick="switchTab('${tab}')"]`).classList.add('active');
+    }
+
+    function loadAll() {
+      if (role !== "lecteur") loadPending();
+      loadActive();
+      loadHistory();
+    }
+
+    function loadPending() {
+      const container = document.getElementById("pending");
+      const data = JSON.parse(localStorage.getItem(PENDING_KEY)) || [];
+      container.innerHTML = data.length ? "" : "<p>Aucune demande en attente.</p>";
+
+      data.forEach((r, i) => {
         const div = document.createElement("div");
         div.className = "entry";
         div.innerHTML = `
-          <strong>${r.name}</strong><br>
-          <div class="info">${r.description}</div>
-          <div class="info">Twitch: ${r.twitch || "-"}</div>
-          <div class="info">YouTube: ${r.youtube || "-"}</div>
-          <div class="info">Twitter: ${r.twitter || "-"}</div>
-          <div class="info">Instagram: ${r.instagram || "-"}</div>
+          <label>Nom:<input value="${r.name}" onchange="editField(${i}, 'name', this.value)"></label>
+          <label>Description:<textarea onchange="editField(${i}, 'description', this.value)">${r.description}</textarea></label>
+          <label>Twitch:<input value="${r.twitch}" onchange="editField(${i}, 'twitch', this.value)"></label>
+          <label>YouTube ID:<input value="${r.youtube}" onchange="editField(${i}, 'youtube', this.value)"></label>
+          <label>Twitter:<input value="${r.twitter}" onchange="editField(${i}, 'twitter', this.value)"></label>
+          <label>Instagram:<input value="${r.instagram}" onchange="editField(${i}, 'instagram', this.value)"></label>
+          <label>Chaîne YouTube:<input value="${r.youtubeLink}" onchange="editField(${i}, 'youtubeLink', this.value)"></label>
+          <label>Durée (heures):<input type="number" min="1" max="48" value="24" id="duration-${i}"></label>
           <div class="info">Soumis le ${new Date(r.submittedAt).toLocaleString()}</div>
           <div class="actions">
-            <button class="approve" onclick='approveRequest("${key}", ${JSON.stringify(r)})'>✅ Approuver</button>
-            <button class="reject" onclick='rejectRequest("${key}")'>❌ Rejeter</button>
-          </div>`;
+            <button class="approve" onclick="approve(${i})">✅ Valider</button>
+            <button class="reject" onclick="reject(${i})">❌ Refuser</button>
+          </div>
+        `;
         container.appendChild(div);
       });
-    });
-  }
-
-  function approveRequest(key, data) {
-    const expiresAt = Date.now() + 24 * 3600 * 1000;
-    data.expiresAt = new Date(expiresAt).toISOString();
-
-    db.ref("approved").set(data, err => {
-      if (err) return alert("Erreur approbation : " + err);
-      db.ref("reservations/" + key).remove(() => {
-        alert("✅ Réservation approuvée !");
-        loadAll();
-      });
-    });
-  }
-
-  function rejectRequest(key) {
-    if (confirm("❌ Confirmer le rejet de cette demande ?")) {
-      db.ref("reservations/" + key).remove(error => {
-        if (error) {
-          alert("Erreur lors du rejet : " + error);
-        } else {
-          alert("🚫 Demande rejetée.");
-          loadAll();
-        }
-      });
     }
-  }
 
-  function loadApproved() {
-    const container = document.getElementById("active");
-    container.innerHTML = "Chargement...";
+    function editField(index, field, value) {
+      if (role === "lecteur") return;
+      const data = JSON.parse(localStorage.getItem(PENDING_KEY)) || [];
+      data[index][field] = value;
+      localStorage.setItem(PENDING_KEY, JSON.stringify(data));
+    }
 
-    db.ref("approved").once("value", snapshot => {
-      const data = snapshot.val();
+    function approve(index) {
+      if (role === "lecteur") return;
+      const pending = JSON.parse(localStorage.getItem(PENDING_KEY)) || [];
+      const approved = pending.splice(index, 1)[0];
+      const duration = parseInt(document.getElementById(`duration-${index}`).value) || 24;
+      approved.expiresAt = new Date(Date.now() + duration * 3600 * 1000).toISOString();
+
+      localStorage.setItem(PENDING_KEY, JSON.stringify(pending));
+      localStorage.setItem(APPROVED_KEY, JSON.stringify(approved));
+      localStorage.setItem("lastValidatedStreamer", approved.name);
+      logToHistory({ ...approved, status: "approuvé", validatedAt: new Date().toISOString() });
+
+      loadAll();
+    }
+
+    function reject(index) {
+      if (role === "lecteur") return;
+      const pending = JSON.parse(localStorage.getItem(PENDING_KEY)) || [];
+      const rejected = pending.splice(index, 1)[0];
+      rejected.status = "refusé";
+      rejected.validatedAt = new Date().toISOString();
+
+      logToHistory(rejected);
+      localStorage.setItem(PENDING_KEY, JSON.stringify(pending));
+      loadAll();
+    }
+
+    function loadActive() {
+      const container = document.getElementById("active");
+      const data = JSON.parse(localStorage.getItem(APPROVED_KEY));
       container.innerHTML = "";
 
       if (!data) {
-        container.innerHTML = "<p>Aucune réservation active.</p>";
+        container.innerHTML = "<p>Aucune réservation en cours.</p>";
         return;
       }
 
       const expires = new Date(data.expiresAt);
-      const mins = Math.floor((expires - new Date()) / 60000);
+      const now = new Date();
+      const mins = Math.floor((expires - now) / 60000);
 
       const div = document.createElement("div");
       div.className = "entry";
       div.innerHTML = `
         <strong>${data.name}</strong><br>
-        <div class="info">${data.description}</div>
-        <div class="info">Expire dans ${mins} minutes</div>
+        <div class="info">Expire dans ${mins} min (${expires.toLocaleString()})</div>
         <div class="actions">
-          <button class="cancel" onclick="cancelApproved()">❌ Annuler</button>
-        </div>`;
+          <button class="cancel" onclick="cancelActive()">🛑 Annuler</button>
+        </div>
+      `;
       container.appendChild(div);
-    });
-  }
+    }
 
+    function cancelActive() {
+      if (role === "lecteur") return;
+      if (confirm("Supprimer la réservation active ?")) {
+        const data = JSON.parse(localStorage.getItem(APPROVED_KEY));
+        logToHistory({ ...data, status: "annulée", validatedAt: new Date().toISOString() });
+        localStorage.removeItem(APPROVED_KEY);
+        loadAll();
+      }
+    }
 
-  loadAll();
-</script>
+    function loadHistory() {
+      const history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+      const container = document.getElementById("historyContent");
+      container.innerHTML = history.length ? "" : "<p>Aucun historique.</p>";
+
+      history.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "entry";
+        div.innerHTML = `
+          <strong>${item.name}</strong> – ${item.status}<br>
+          <div class="info">Décision : ${new Date(item.validatedAt).toLocaleString()}</div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function logToHistory(entry) {
+      const history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+      history.unshift(entry);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    }
+
+    function exportHistory() {
+      const data = localStorage.getItem(HISTORY_KEY);
+      const blob = new Blob([data], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "historique_reservations.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    loadAll();
+  </script>
 </body>
 </html>
