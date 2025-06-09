@@ -3,38 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Connexion Discord Avancée</title>
+  <title>Connexion Discord & Classement</title>
   <style>
-    :root {
-      --primary: #7700ff;
-      --bg: #0e0e0e;
-      --card: rgba(255, 255, 255, 0.06);
-      --text: #ffffff;
-    }
     body {
-      background: var(--bg);
-      color: var(--text);
+      background: #0e0e0e;
+      color: white;
       font-family: 'Segoe UI', sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
+      justify-content: flex-start;
+      padding: 2rem;
+      min-height: 100vh;
     }
-    h1 { color: var(--primary); }
+    h1, h2 {
+      color: #7700ff;
+    }
     .form-card {
-      background: var(--card);
+      background: rgba(255, 255, 255, 0.06);
       padding: 2rem;
       border-radius: 1rem;
       box-shadow: 0 0 20px #7700ff30;
       text-align: center;
+      margin-bottom: 2rem;
     }
     .form-card button {
       padding: 1rem 2rem;
       font-size: 1.1rem;
       font-weight: bold;
-      background: var(--primary);
+      background: #7700ff;
       color: white;
       border: none;
       border-radius: 5px;
@@ -46,20 +43,23 @@
     .user-info img {
       width: 100px;
       border-radius: 50%;
-      margin-bottom: 1rem;
     }
-    .badge {
-      background: gold;
-      color: black;
-      font-weight: bold;
-      padding: 0.2rem 0.5rem;
-      border-radius: 5px;
-      font-size: 0.8rem;
-      margin-left: 0.5rem;
+    .leaderboard, .minigame {
+      background: rgba(255, 255, 255, 0.04);
+      padding: 1.5rem;
+      border-radius: 1rem;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 0 10px #444;
+      margin-bottom: 2rem;
+    }
+    .leaderboard li {
+      list-style: none;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #333;
     }
   </style>
 
-  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script>
@@ -70,8 +70,7 @@
       projectId: "legendaweb-c8ec1",
       storageBucket: "legendaweb-c8ec1.appspot.com",
       messagingSenderId: "930376439071",
-      appId: "1:930376439071:web:09f87f27976022e4c00c2a",
-      measurementId: "G-D7HDC71PL7"
+      appId: "1:930376439071:web:09f87f27976022e4c00c2a"
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
@@ -83,6 +82,17 @@
     <button onclick="loginWithDiscord()">Se connecter avec Discord</button>
   </div>
 
+  <div class="leaderboard">
+    <h2>🏆 Classement des utilisateurs</h2>
+    <ul id="leaderboardList">Chargement...</ul>
+  </div>
+
+  <div class="minigame">
+    <h2>🎲 Mini-jeu : Clique le plus vite !</h2>
+    <button onclick="playGame()">Clique ici !</button>
+    <p id="gameStatus">Prêt à jouer ?</p>
+  </div>
+
   <script>
     const CLIENT_ID = "1381594849576226836";
     const REDIRECT_URI = window.location.origin + window.location.pathname;
@@ -92,7 +102,19 @@
       window.location.href = url;
     }
 
+    function updateLeaderboard() {
+      db.ref("discordUsers").orderByChild("loginCount").limitToLast(10).once("value").then(snapshot => {
+        const list = document.getElementById("leaderboardList");
+        list.innerHTML = "";
+        const users = Object.entries(snapshot.val() || {}).reverse();
+        users.forEach(([id, user], index) => {
+          list.innerHTML += `<li>#${index + 1} - ${user.username}#${user.discriminator} - ${user.loginCount || 1} connexions</li>`;
+        });
+      });
+    }
+
     window.onload = () => {
+      updateLeaderboard();
       const hash = window.location.hash;
       if (hash.includes("access_token")) {
         const params = new URLSearchParams(hash.substring(1));
@@ -103,38 +125,56 @@
         })
         .then(res => res.json())
         .then(user => {
-          const ref = db.ref(`discordUsers/${user.id}`);
-          ref.once("value").then(snapshot => {
-            const previous = snapshot.val() || {};
-            const newCount = (previous.loginCount || 0) + 1;
+          const userRef = db.ref(`discordUsers/${user.id}`);
 
-            ref.set({
+          userRef.once("value").then(snapshot => {
+            const previous = snapshot.val() || {};
+            const loginCount = (previous.loginCount || 0) + 1;
+
+            document.getElementById("card").innerHTML = `
+              <div class="user-info">
+                <img src="https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png" alt="avatar">
+                <h2>${user.username}#${user.discriminator}</h2>
+                <p>ID : ${user.id}</p>
+                <p>✅ Connecté (${loginCount}x)</p>
+                <p>${loginCount >= 5 ? '🎖️ <strong>Fidèle</strong>' : ''}</p>
+              </div>
+            `;
+
+            userRef.set({
               username: user.username,
               discriminator: user.discriminator,
               avatar: user.avatar,
               connectedAt: new Date().toISOString(),
-              loginCount: newCount
+              loginCount
             });
 
-            const avatarUrl = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
-            const badge = newCount >= 5 ? '<span class="badge">Fidèle</span>' : '';
-
-            document.getElementById("card").innerHTML = `
-              <div class="user-info">
-                <img src="${avatarUrl}" alt="avatar">
-                <h2>${user.username}#${user.discriminator} ${badge}</h2>
-                <p>ID : ${user.id}</p>
-                <p>🔁 Connexions : ${newCount}</p>
-                <p>✅ Connecté avec succès !</p>
-              </div>
-            `;
+            updateLeaderboard();
           });
         })
         .catch(err => {
           document.getElementById("card").innerHTML = `<p style='color:red;'>Erreur de connexion Discord.</p>`;
-          console.error(err);
         });
       }
+    };
+
+    function playGame() {
+      const btn = event.target;
+      btn.disabled = true;
+      const status = document.getElementById("gameStatus");
+      status.textContent = "Prépare-toi...";
+      setTimeout(() => {
+        status.textContent = "Clique maintenant !";
+        const start = Date.now();
+        btn.textContent = "Clique !";
+        btn.onclick = () => {
+          const reactionTime = Date.now() - start;
+          status.innerHTML = `⏱️ Réaction : <strong>${reactionTime} ms</strong>`;
+          btn.textContent = "Rejouer";
+          btn.onclick = playGame;
+          btn.disabled = false;
+        };
+      }, Math.random() * 2000 + 1000);
     }
   </script>
 </body>
