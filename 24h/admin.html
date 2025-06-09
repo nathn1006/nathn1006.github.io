@@ -87,7 +87,7 @@
 
   function loadPending() {
     const container = document.getElementById("pending");
-    db.ref("pendingReservations").once("value").then(snapshot => {
+    db.ref("reservations").once("value").then(snapshot => {
       const data = snapshot.val();
       console.log("Données récupérées depuis Firebase :", data);
       if (!data) {
@@ -122,7 +122,7 @@
   }
 
   function editField(key, field, value) {
-    db.ref(`pendingReservations/${key}/${field}`).set(value);
+    db.ref(`reservations/${key}/${field}`).set(value);
   }
 
   window.onload = loadAll;
