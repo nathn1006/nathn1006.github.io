@@ -26,6 +26,7 @@
     button.approve { background: #00cc66; }
     button.reject { background: #cc0033; }
     button.cancel { background: #cc9900; }
+    button.report { background: #ff6600; }
     button.export { margin-top: 1rem; background: #3366ff; }
     button { padding: 0.5rem 1rem; border: none; color: white; font-weight: bold; border-radius: 5px; cursor: pointer; }
     .info { font-size: 0.9em; color: #ccc; }
@@ -109,6 +110,7 @@
             <div class="actions">
               <button class="approve" onclick="approve('${key}')">✅ Valider</button>
               <button class="reject" onclick="reject('${key}')">❌ Refuser</button>
+              <button class="report" onclick="report('${key}')">🚩 Signaler</button>
             </div>
           `;
           container.appendChild(div);
@@ -117,41 +119,43 @@
     });
   }
 
+  function report(key) {
+    const reportedAt = new Date().toISOString();
+    db.ref(`reports/${key}`).set({ reportedAt });
+    alert("🚩 Réservation signalée.");
+  }
+
   function editField(key, field, value) {
     db.ref(`reservations/${key}/${field}`).set(value);
   }
 
- function approve(key) {
-  const duration = parseInt(document.getElementById(`duration-${key}`).value) || 24;
-  const expiresAt = new Date(Date.now() + duration * 3600 * 1000).toISOString();
-  const now = new Date().toISOString();
+  function approve(key) {
+    const duration = parseInt(document.getElementById(`duration-${key}`).value) || 24;
+    const expiresAt = new Date(Date.now() + duration * 3600 * 1000).toISOString();
+    const now = new Date().toISOString();
 
-  // 1. Lire la réservation actuelle
-  db.ref(`reservations/${key}`).once("value").then(snapshot => {
-    const data = snapshot.val();
+    db.ref(`reservations/${key}`).once("value").then(snapshot => {
+      const data = snapshot.val();
 
-    if (!data) {
-      alert("Erreur : Réservation introuvable.");
-      return;
-    }
+      if (!data) {
+        alert("Erreur : Réservation introuvable.");
+        return;
+      }
 
-    // 2. Mettre à jour la réservation principale
-    const updates = {
-      ...data,
-      status: "approuvé",
-      validatedAt: now,
-      expiresAt: expiresAt
-    };
+      const updates = {
+        ...data,
+        status: "approuvé",
+        validatedAt: now,
+        expiresAt: expiresAt
+      };
 
-    db.ref(`reservations/${key}`).update(updates);
+      db.ref(`reservations/${key}`).update(updates);
+      db.ref(`approvedReservations/${key}`).set(updates);
 
-    // 3. Enregistrer une copie dans /approvedReservations/
-    db.ref(`approvedReservations/${key}`).set(updates);
-
-    alert("✅ Réservation approuvée et copiée.");
-    loadAll();
-  });
-}
+      alert("✅ Réservation approuvée et copiée.");
+      loadAll();
+    });
+  }
 
   function reject(key) {
     db.ref(`reservations/${key}`).update({
@@ -204,6 +208,7 @@
             <div class="info">Expire dans ${minsLeft} min (${expires.toLocaleString()})</div>
             <div class="actions">
               <button class="cancel" onclick="cancelActive('${key}')">🛑 Annuler</button>
+              <button class="report" onclick="report('${key}')">🚩 Signaler</button>
             </div>
           `;
           container.appendChild(div);
