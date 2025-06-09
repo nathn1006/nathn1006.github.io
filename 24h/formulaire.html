@@ -153,21 +153,19 @@
 
   // 🔁 Redirige si une réservation approuvée est encore active
   db.ref("approvedReservations").once("value").then(snapshot => {
-    const data = snapshot.val();
-    if (!data) return;
+  const data = snapshot.val();
+  if (!data) return;
 
-    const now = new Date();
-    for (const [key, r] of Object.entries(data)) {
-      const expires = new Date(r.expiresAt);
-      if (expires > now) {
-        if (expires > now) {
-  window.location.href = "partage.html";
-  return;
-}
-        return;
-      }
+  const now = new Date();
+  for (const [key, r] of Object.entries(data)) {
+    const expires = new Date(r.expiresAt);
+    if (expires > now && !location.href.includes("formulaire.html")) {
+      window.location.href = "partage.html";
+      return;
     }
-  });
+  }
+});
+
 
   // Message de succès (optionnel)
   const last = localStorage.getItem("lastValidatedStreamer");
