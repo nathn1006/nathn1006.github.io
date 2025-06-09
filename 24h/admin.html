@@ -83,47 +83,72 @@
 
   function loadAll() {
     loadPending();
+    loadActive();
   }
 
   function loadPending() {
     const container = document.getElementById("pending");
-    db.ref("reservations").once("value").then(snapshot => {
+    db.ref("reservations").orderByChild("status").equalTo("en_attente").once("value").then(snapshot => {
       const data = snapshot.val();
-      console.log("Données récupérées depuis Firebase :", data);
-      if (!data) {
-        container.innerHTML = "<p>Aucune demande en attente.</p>";
-        return;
-      }
-      const keys = Object.keys(data);
-      container.innerHTML = keys.length ? "" : "<p>Aucune demande en attente.</p>";
+      container.innerHTML = data ? "" : "<p>Aucune demande en attente.</p>";
 
-      keys.forEach(key => {
-        const r = data[key];
-        const div = document.createElement("div");
-        div.className = "entry";
-        div.innerHTML = `
-          <label>Nom:<input value="${r.name}" onchange="editField('${key}', 'name', this.value)"></label>
-          <label>Description:<textarea onchange="editField('${key}', 'description', this.value)">${r.description || ""}</textarea></label>
-          <label>Twitch:<input value="${r.twitch || ""}" onchange="editField('${key}', 'twitch', this.value)"></label>
-          <label>YouTube ID:<input value="${r.youtube || ""}" onchange="editField('${key}', 'youtube', this.value)"></label>
-          <label>Twitter:<input value="${r.twitter || ""}" onchange="editField('${key}', 'twitter', this.value)"></label>
-          <label>Instagram:<input value="${r.instagram || ""}" onchange="editField('${key}', 'instagram', this.value)"></label>
-          <label>Chaîne YouTube:<input value="${r.youtubeLink || ""}" onchange="editField('${key}', 'youtubeLink', this.value)"></label>
-          <label>Durée (heures):<input type="number" min="1" max="48" value="24" id="duration-${key}"></label>
-          <div class="info">Soumis le ${r.submittedAt ? new Date(r.submittedAt).toLocaleString() : "N/A"}</div>
-          <div class="actions">
-            <button class="approve" onclick="approve('${key}')">✅ Valider</button>
-            <button class="reject" onclick="reject('${key}')">❌ Refuser</button>
-          </div>
-        `;
-        container.appendChild(div);
-      });
+      if (data) {
+        Object.entries(data).forEach(([key, r]) => {
+          const div = document.createElement("div");
+          div.className = "entry";
+          div.innerHTML = `
+            <label>Nom:<input value="${r.name}" onchange="editField('${key}', 'name', this.value)"></label>
+            <label>Description:<textarea onchange="editField('${key}', 'description', this.value)">${r.description || ""}</textarea></label>
+            <label>Twitch:<input value="${r.twitch || ""}" onchange="editField('${key}', 'twitch', this.value)"></label>
+            <label>YouTube ID:<input value="${r.youtube || ""}" onchange="editField('${key}', 'youtube', this.value)"></label>
+            <label>Twitter:<input value="${r.twitter || ""}" onchange="editField('${key}', 'twitter', this.value)"></label>
+            <label>Instagram:<input value="${r.instagram || ""}" onchange="editField('${key}', 'instagram', this.value)"></label>
+            <label>Chaîne YouTube:<input value="${r.youtubeLink || ""}" onchange="editField('${key}', 'youtubeLink', this.value)"></label>
+            <label>Durée (heures):<input type="number" min="1" max="48" value="24" id="duration-${key}"></label>
+            <div class="info">Soumis le ${r.submittedAt ? new Date(r.submittedAt).toLocaleString() : "N/A"}</div>
+            <div class="actions">
+              <button class="approve" onclick="approve('${key}')">✅ Valider</button>
+              <button class="reject" onclick="reject('${key}')">❌ Refuser</button>
+            </div>
+          `;
+          container.appendChild(div);
+        });
+      }
     });
   }
 
-    function loadActive() {
-       loadPending();
-  loadActive();
+  function editField(key, field, value) {
+    db.ref(`reservations/${key}/${field}`).set(value);
+  }
+
+  function approve(key) {
+    const duration = parseInt(document.getElementById(`duration-${key}`).value) || 24;
+    const expiresAt = new Date(Date.now() + duration * 3600 * 1000).toISOString();
+    db.ref(`reservations/${key}`).update({
+      status: "approuvé",
+      validatedAt: new Date().toISOString(),
+      expiresAt
+    });
+    loadAll();
+  }
+
+  function reject(key) {
+    db.ref(`reservations/${key}`).update({
+      status: "refusé",
+      validatedAt: new Date().toISOString()
+    });
+    loadAll();
+  }
+
+  function cancelActive(key) {
+    if (!confirm("Annuler cette réservation ?")) return;
+
+    db.ref(`reservations/${key}`).remove();
+    alert("Réservation annulée.");
+    loadAll();
+  }
+
+  function loadActive() {
     const container = document.getElementById("active");
     container.innerHTML = "";
 
@@ -134,35 +159,56 @@
         return;
       }
 
-      // On affiche la première réservation approuvée trouvée
-      const key = Object.keys(data)[0];
-      const r = data[key];
-      const expires = new Date(r.expiresAt);
-      const now = new Date();
-      const minsLeft = Math.max(0, Math.floor((expires - now) / 60000));
+      let found = false;
 
-      const div = document.createElement("div");
-      div.className = "entry";
-      div.innerHTML = `
-        <strong>${r.name}</strong><br>
-        <div class="info">Expire dans ${minsLeft} min (${expires.toLocaleString()})</div>
-        <div class="actions">
-          <button class="cancel" onclick="cancelActive('${key}')">🛑 Annuler</button>
-        </div>
-      `;
-      container.appendChild(div);
+      Object.entries(data).forEach(([key, r]) => {
+        const expires = new Date(r.expiresAt);
+        const now = new Date();
+
+        if (expires <= now) {
+          db.ref(`reservations/${key}`).update({
+            status: "annulée",
+            validatedAt: new Date().toISOString()
+          });
+          return;
+        }
+
+        if (!found) {
+          found = true;
+          const minsLeft = Math.max(0, Math.floor((expires - now) / 60000));
+          const div = document.createElement("div");
+          div.className = "entry";
+          div.innerHTML = `
+            <strong>${r.name}</strong><br>
+            <div class="info">Expire dans ${minsLeft} min (${expires.toLocaleString()})</div>
+            <div class="actions">
+              <button class="cancel" onclick="cancelActive('${key}')">🛑 Annuler</button>
+            </div>
+          `;
+          container.appendChild(div);
+        }
+      });
+
+      if (!found) {
+        container.innerHTML = "<p>Aucune réservation en cours.</p>";
+      }
     });
   }
 
-  function cancelActive(key) {
-    if (!confirm("Annuler cette réservation ?")) return;
-
-    db.ref(`reservations/${key}/status`).set("annulée");
-    db.ref(`reservations/${key}/validatedAt`).set(new Date().toISOString());
-
-    alert("Réservation annulée.");
-    loadAll();
+  function exportHistory() {
+    db.ref("reservations").once("value").then(snapshot => {
+      const data = snapshot.val();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "historique_reservations.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    });
   }
+
+  window.onload = loadAll;
 </script>
 </body>
 </html>
