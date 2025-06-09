@@ -160,7 +160,10 @@
     for (const [key, r] of Object.entries(data)) {
       const expires = new Date(r.expiresAt);
       if (expires > now) {
-        window.location.href = "formulaire.html";
+        if (expires > now) {
+  window.location.href = "partage.html";
+  return;
+}
         return;
       }
     }
