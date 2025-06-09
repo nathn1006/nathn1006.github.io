@@ -7,8 +7,8 @@
   <style>
     :root {
       --primary: #7700ff;
-      --bg: #ffffff;
-      --card: #f4f4f4;
+      --bg: #f9f9f9;
+      --card: #ffffff;
       --text: #111;
     }
 
@@ -44,7 +44,8 @@
       border-radius: 1rem;
       max-width: 800px;
       width: 100%;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+      transition: all 0.3s ease-in-out;
     }
 
     .entry {
@@ -107,6 +108,19 @@
 
     .report-btn:hover {
       background-color: #cc0000;
+    }
+
+    #reportReasonContainer {
+      margin-top: 1rem;
+    }
+
+    #reportReasonContainer textarea {
+      width: 100%;
+      padding: 0.7rem;
+      font-size: 1rem;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      resize: vertical;
     }
   </style>
 </head>
@@ -177,7 +191,10 @@
 
           html += `
             <div class="countdown" id="countdown"></div>
-            <button class="report-btn" onclick="reportStreamer('${key}')">🚩 Signaler ce contenu</button>
+            <div id="reportReasonContainer">
+              <textarea id="reportReason" placeholder="Décris brièvement la raison du signalement..."></textarea>
+              <button class="report-btn" onclick="reportStreamer('${key}')">🚩 Signaler ce contenu</button>
+            </div>
           `;
 
           content.innerHTML = html;
@@ -208,10 +225,18 @@
     });
 
     function reportStreamer(reservationId) {
+      const reason = document.getElementById("reportReason").value.trim();
+      if (!reason) {
+        alert("Merci de décrire la raison du signalement.");
+        return;
+      }
+
       db.ref(`reports/${reservationId}`).set({
-        reportedAt: new Date().toISOString()
+        reportedAt: new Date().toISOString(),
+        reason: reason
       }).then(() => {
-        alert("🚨 Merci, ce contenu a été signalé.");
+        alert("🚨 Merci, votre signalement a été enregistré.");
+        document.getElementById("reportReasonContainer").innerHTML = "<p style='color:green;'>Merci pour votre retour. Le signalement a bien été transmis.</p>";
       }).catch((err) => {
         alert("Erreur lors du signalement : " + err.message);
       });
