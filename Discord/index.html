@@ -3,11 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Connexion Discord</title>
+  <title>Connexion Discord Avancée</title>
   <style>
+    :root {
+      --primary: #7700ff;
+      --bg: #0e0e0e;
+      --card: rgba(255, 255, 255, 0.06);
+      --text: #ffffff;
+    }
     body {
-      background: #0e0e0e;
-      color: white;
+      background: var(--bg);
+      color: var(--text);
       font-family: 'Segoe UI', sans-serif;
       display: flex;
       flex-direction: column;
@@ -16,11 +22,9 @@
       height: 100vh;
       margin: 0;
     }
-    h1 {
-      color: #7700ff;
-    }
+    h1 { color: var(--primary); }
     .form-card {
-      background: rgba(255, 255, 255, 0.06);
+      background: var(--card);
       padding: 2rem;
       border-radius: 1rem;
       box-shadow: 0 0 20px #7700ff30;
@@ -30,7 +34,7 @@
       padding: 1rem 2rem;
       font-size: 1.1rem;
       font-weight: bold;
-      background: #7700ff;
+      background: var(--primary);
       color: white;
       border: none;
       border-radius: 5px;
@@ -42,9 +46,16 @@
     .user-info img {
       width: 100px;
       border-radius: 50%;
+      margin-bottom: 1rem;
     }
-    .user-info h2 {
-      margin: 0.5rem 0 0 0;
+    .badge {
+      background: gold;
+      color: black;
+      font-weight: bold;
+      padding: 0.2rem 0.5rem;
+      border-radius: 5px;
+      font-size: 0.8rem;
+      margin-left: 0.5rem;
     }
   </style>
 
@@ -73,7 +84,7 @@
   </div>
 
   <script>
-    const CLIENT_ID = "1381594849576226836"; // remplace par ton vrai client ID Discord
+    const CLIENT_ID = "1381594849576226836";
     const REDIRECT_URI = window.location.origin + window.location.pathname;
 
     function loginWithDiscord() {
@@ -88,26 +99,35 @@
         const accessToken = params.get("access_token");
 
         fetch("https://discord.com/api/users/@me", {
-          headers: {
-            Authorization: `Bearer ${accessToken}`
-          }
+          headers: { Authorization: `Bearer ${accessToken}` }
         })
         .then(res => res.json())
         .then(user => {
-          document.getElementById("card").innerHTML = `
-            <div class="user-info">
-              <img src="https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png" alt="avatar">
-              <h2>${user.username}#${user.discriminator}</h2>
-              <p>ID : ${user.id}</p>
-              <p>✅ Connecté avec succès !</p>
-            </div>
-          `;
+          const ref = db.ref(`discordUsers/${user.id}`);
+          ref.once("value").then(snapshot => {
+            const previous = snapshot.val() || {};
+            const newCount = (previous.loginCount || 0) + 1;
 
-          db.ref(`discordUsers/${user.id}`).set({
-            username: user.username,
-            discriminator: user.discriminator,
-            avatar: user.avatar,
-            connectedAt: new Date().toISOString()
+            ref.set({
+              username: user.username,
+              discriminator: user.discriminator,
+              avatar: user.avatar,
+              connectedAt: new Date().toISOString(),
+              loginCount: newCount
+            });
+
+            const avatarUrl = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
+            const badge = newCount >= 5 ? '<span class="badge">Fidèle</span>' : '';
+
+            document.getElementById("card").innerHTML = `
+              <div class="user-info">
+                <img src="${avatarUrl}" alt="avatar">
+                <h2>${user.username}#${user.discriminator} ${badge}</h2>
+                <p>ID : ${user.id}</p>
+                <p>🔁 Connexions : ${newCount}</p>
+                <p>✅ Connecté avec succès !</p>
+              </div>
+            `;
           });
         })
         .catch(err => {
