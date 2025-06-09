@@ -36,6 +36,7 @@
       border: none;
       border-radius: 5px;
       cursor: pointer;
+      margin-top: 1rem;
     }
     .form-card button:hover {
       background: #5e00c7;
@@ -47,16 +48,27 @@
     .user-info h2 {
       margin: 0.5rem 0 0 0;
     }
-    .village-game {
+    .tools {
       margin-top: 2rem;
-      background: rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.05);
       padding: 1rem;
-      border-radius: 1rem;
-      text-align: center;
-      max-width: 600px;
+      border-radius: 0.5rem;
     }
-    .team {
-      margin: 1rem 0;
+    .tools h3 {
+      color: #ccc;
+      margin-bottom: 0.5rem;
+    }
+    .tools button {
+      margin: 0.3rem;
+      padding: 0.5rem 1rem;
+      background: #333;
+      border: none;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .tools button:hover {
+      background: #555;
     }
   </style>
 
@@ -83,7 +95,6 @@
   <div class="form-card" id="card">
     <button onclick="loginWithDiscord()">Se connecter avec Discord</button>
   </div>
-
 
   <script>
     const CLIENT_ID = "1381594849576226836";
@@ -114,9 +125,53 @@
               <p>ID : ${user.id}</p>
               <p>✅ Connecté avec succès !</p>
             </div>
+            <div class="tools">
+              <h3>Outils Discord</h3>
+              <button onclick="copyInvite('${user.id}')">📋 Copier lien d'invitation</button>
+              <button onclick="generateNickname('${user.username}')">🧙 Générer surnom</button>
+              <button onclick="logActivity('${user.id}')">📅 Journal d'activité</button>
+              <button onclick="simulatePing('${user.username}')">🔔 Simuler un ping</button>
+            </div>
           `;
 
+          db.ref(`discordUsers/${user.id}`).get().then(snap => {
+            let old = snap.val();
+            let connections = old?.connections || 0;
+            db.ref(`discordUsers/${user.id}`).set({
+              username: user.username,
+              discriminator: user.discriminator,
+              avatar: user.avatar,
+              connectedAt: new Date().toISOString(),
+              connections: connections + 1
+            });
+          });
+        })
+        .catch(err => {
+          document.getElementById("card").innerHTML = `<p style='color:red;'>Erreur de connexion Discord.</p>`;
+          console.error(err);
+        });
+      }
+    }
 
+    function copyInvite(userId) {
+      const inviteLink = `https://discordapp.com/users/${userId}`;
+      navigator.clipboard.writeText(inviteLink).then(() => alert("🔗 Lien copié !"));
+    }
+
+    function generateNickname(username) {
+      const suffix = Math.floor(Math.random() * 1000);
+      alert(`🧙 Ton surnom magique : ${username}-${suffix}`);
+    }
+
+    function logActivity(userId) {
+      const now = new Date().toISOString();
+      db.ref(`activityLogs/${userId}`).push({ date: now });
+      alert("📅 Activité enregistrée dans Firebase.");
+    }
+
+    function simulatePing(username) {
+      alert(`🔔 ${username}, vous avez été mentionné !`);
+    }
   </script>
 </body>
 </html>
