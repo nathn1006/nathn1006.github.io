@@ -121,29 +121,46 @@
     });
   }
 
-  function editField(key, field, value) {
-    db.ref(`reservations/${key}/${field}`).set(value);
+    function loadActive() {
+       loadPending();
+  loadActive();
+    const container = document.getElementById("active");
+    container.innerHTML = "";
+
+    db.ref("reservations").orderByChild("status").equalTo("approuvé").once("value").then(snapshot => {
+      const data = snapshot.val();
+      if (!data) {
+        container.innerHTML = "<p>Aucune réservation en cours.</p>";
+        return;
+      }
+
+      // On affiche la première réservation approuvée trouvée
+      const key = Object.keys(data)[0];
+      const r = data[key];
+      const expires = new Date(r.expiresAt);
+      const now = new Date();
+      const minsLeft = Math.max(0, Math.floor((expires - now) / 60000));
+
+      const div = document.createElement("div");
+      div.className = "entry";
+      div.innerHTML = `
+        <strong>${r.name}</strong><br>
+        <div class="info">Expire dans ${minsLeft} min (${expires.toLocaleString()})</div>
+        <div class="actions">
+          <button class="cancel" onclick="cancelActive('${key}')">🛑 Annuler</button>
+        </div>
+      `;
+      container.appendChild(div);
+    });
   }
 
-  window.onload = loadAll;
-  function approve(key) {
-    const durationInput = document.getElementById(`duration-${key}`);
-    const duration = parseInt(durationInput.value) || 24;
-    const expiresAt = new Date(Date.now() + duration * 3600 * 1000).toISOString();
+  function cancelActive(key) {
+    if (!confirm("Annuler cette réservation ?")) return;
 
-    db.ref(`reservations/${key}/status`).set("approuvé");
-    db.ref(`reservations/${key}/validatedAt`).set(new Date().toISOString());
-    db.ref(`reservations/${key}/expiresAt`).set(expiresAt);
-
-    alert("Réservation approuvée.");
-    loadAll();
-  }
-
-  function reject(key) {
-    db.ref(`reservations/${key}/status`).set("refusé");
+    db.ref(`reservations/${key}/status`).set("annulée");
     db.ref(`reservations/${key}/validatedAt`).set(new Date().toISOString());
 
-    alert("Réservation refusée.");
+    alert("Réservation annulée.");
     loadAll();
   }
 </script>
