@@ -121,26 +121,34 @@
     db.ref(`reservations/${key}/${field}`).set(value);
   }
 
-  function approve(key) {
+ function approve(key) {
   const duration = parseInt(document.getElementById(`duration-${key}`).value) || 24;
   const expiresAt = new Date(Date.now() + duration * 3600 * 1000).toISOString();
+  const now = new Date().toISOString();
 
+  // 1. Lire la réservation actuelle
   db.ref(`reservations/${key}`).once("value").then(snapshot => {
-    const r = snapshot.val();
-    
-    db.ref(`reservations/${key}`).update({
+    const data = snapshot.val();
+
+    if (!data) {
+      alert("Erreur : Réservation introuvable.");
+      return;
+    }
+
+    // 2. Mettre à jour la réservation principale
+    const updates = {
+      ...data,
       status: "approuvé",
-      validatedAt: new Date().toISOString(),
-      expiresAt
-    });
+      validatedAt: now,
+      expiresAt: expiresAt
+    };
 
-    // Stocke localement pour partage.html
-    localStorage.setItem("ApprouvedReservations", JSON.stringify({ ...r, expiresAt }));
+    db.ref(`reservations/${key}`).update(updates);
 
-    // Optionnel : notifier l'utilisateur
-    localStorage.setItem("lastValidatedStreamer", r.name || "Streamer");
+    // 3. Enregistrer une copie dans /approvedReservations/
+    db.ref(`approvedReservations/${key}`).set(updates);
 
-    alert("✅ Réservation approuvée.");
+    alert("✅ Réservation approuvée et copiée.");
     loadAll();
   });
 }
