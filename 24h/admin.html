@@ -83,14 +83,17 @@
 
   function loadAll() {
     loadPending();
-    // loadActive();
-    // loadHistory();
   }
 
   function loadPending() {
     const container = document.getElementById("pending");
     db.ref("pendingReservations").once("value").then(snapshot => {
-      const data = snapshot.val() || {};
+      const data = snapshot.val();
+      console.log("Données récupérées depuis Firebase :", data);
+      if (!data) {
+        container.innerHTML = "<p>Aucune demande en attente.</p>";
+        return;
+      }
       const keys = Object.keys(data);
       container.innerHTML = keys.length ? "" : "<p>Aucune demande en attente.</p>";
 
@@ -100,14 +103,14 @@
         div.className = "entry";
         div.innerHTML = `
           <label>Nom:<input value="${r.name}" onchange="editField('${key}', 'name', this.value)"></label>
-          <label>Description:<textarea onchange="editField('${key}', 'description', this.value)">${r.description}</textarea></label>
-          <label>Twitch:<input value="${r.twitch}" onchange="editField('${key}', 'twitch', this.value)"></label>
-          <label>YouTube ID:<input value="${r.youtube}" onchange="editField('${key}', 'youtube', this.value)"></label>
-          <label>Twitter:<input value="${r.twitter}" onchange="editField('${key}', 'twitter', this.value)"></label>
-          <label>Instagram:<input value="${r.instagram}" onchange="editField('${key}', 'instagram', this.value)"></label>
-          <label>Chaîne YouTube:<input value="${r.youtubeLink}" onchange="editField('${key}', 'youtubeLink', this.value)"></label>
+          <label>Description:<textarea onchange="editField('${key}', 'description', this.value)">${r.description || ""}</textarea></label>
+          <label>Twitch:<input value="${r.twitch || ""}" onchange="editField('${key}', 'twitch', this.value)"></label>
+          <label>YouTube ID:<input value="${r.youtube || ""}" onchange="editField('${key}', 'youtube', this.value)"></label>
+          <label>Twitter:<input value="${r.twitter || ""}" onchange="editField('${key}', 'twitter', this.value)"></label>
+          <label>Instagram:<input value="${r.instagram || ""}" onchange="editField('${key}', 'instagram', this.value)"></label>
+          <label>Chaîne YouTube:<input value="${r.youtubeLink || ""}" onchange="editField('${key}', 'youtubeLink', this.value)"></label>
           <label>Durée (heures):<input type="number" min="1" max="48" value="24" id="duration-${key}"></label>
-          <div class="info">Soumis le ${new Date(r.submittedAt).toLocaleString()}</div>
+          <div class="info">Soumis le ${r.submittedAt ? new Date(r.submittedAt).toLocaleString() : "N/A"}</div>
           <div class="actions">
             <button class="approve" onclick="approve('${key}')">✅ Valider</button>
             <button class="reject" onclick="reject('${key}')">❌ Refuser</button>
