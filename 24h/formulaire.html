@@ -57,25 +57,27 @@
       border-radius: 5px;
       font-size: 1rem;
     }
-    .back-btn {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  background: #222;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  cursor: pointer;
-  z-index: 100;
-  box-shadow: 0 0 5px #000;
-  width: auto; /* ← ajoute ça pour annuler le width: 100% */
-}
 
-.back-btn:hover {
-  background: #444;
-}
+    .back-btn {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      background: #222;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      cursor: pointer;
+      z-index: 100;
+      box-shadow: 0 0 5px #000;
+      width: auto;
+    }
+
+    .back-btn:hover {
+      background: #444;
+    }
+
     textarea {
       resize: vertical;
     }
@@ -115,24 +117,6 @@
 </head>
 <body>
 <button onclick="window.location.href='index.html'" class="back-btn">⬅️ Retour</button>
-<script>
-  const reservation = JSON.parse(localStorage.getItem("approvedReservation"));
-  if (reservation) {
-    const now = new Date();
-    const expires = new Date(reservation.expiresAt);
-    if (now < expires) {
-      window.location.href = "live1.html";
-    } else {
-      localStorage.removeItem("approvedReservation");
-    }
-  }
-
-  const last = localStorage.getItem("lastValidatedStreamer");
-  if (last) {
-    alert(`✅ Félicitations ${last} ! Ta réservation a été validée.`);
-    localStorage.removeItem("lastValidatedStreamer");
-  }
-</script>
 
 <h1>🎮 Réserve cette page</h1>
 <p class="description">Tu es streamer ou créateur de contenu ? Remplis ce formulaire pour demander à occuper cette page pendant 24h (sous validation manuelle).</p>
@@ -153,7 +137,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
 <script>
-  // Firebase config
   const firebaseConfig = {
     apiKey: "AIzaSyDnj5lDeKvfbOvvgENjkGfeV7vw6rHlBiU",
     authDomain: "legendaweb-c8ec1.firebaseapp.com",
@@ -168,6 +151,28 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
+  // 🔁 Redirige si une réservation approuvée est encore active
+  db.ref("approvedReservations").once("value").then(snapshot => {
+    const data = snapshot.val();
+    if (!data) return;
+
+    const now = new Date();
+    for (const [key, r] of Object.entries(data)) {
+      const expires = new Date(r.expiresAt);
+      if (expires > now) {
+        window.location.href = "formulaire.html";
+        return;
+      }
+    }
+  });
+
+  // Message de succès (optionnel)
+  const last = localStorage.getItem("lastValidatedStreamer");
+  if (last) {
+    alert(`✅ Félicitations ${last} ! Ta réservation a été validée.`);
+    localStorage.removeItem("lastValidatedStreamer");
+  }
+
   function submitReservation() {
     const data = {
       name: document.getElementById("name").value.trim(),
@@ -177,7 +182,8 @@
       twitter: document.getElementById("twitter").value.trim(),
       instagram: document.getElementById("instagram").value.trim(),
       youtubeLink: document.getElementById("youtubeLink").value.trim(),
-      submittedAt: new Date().toISOString()
+      submittedAt: new Date().toISOString(),
+      status: "en_attente"
     };
 
     if (!data.name) {
