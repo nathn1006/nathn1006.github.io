@@ -126,6 +126,26 @@
   }
 
   window.onload = loadAll;
+  function approve(key) {
+    const durationInput = document.getElementById(`duration-${key}`);
+    const duration = parseInt(durationInput.value) || 24;
+    const expiresAt = new Date(Date.now() + duration * 3600 * 1000).toISOString();
+
+    db.ref(`reservations/${key}/status`).set("approuvé");
+    db.ref(`reservations/${key}/validatedAt`).set(new Date().toISOString());
+    db.ref(`reservations/${key}/expiresAt`).set(expiresAt);
+
+    alert("Réservation approuvée.");
+    loadAll();
+  }
+
+  function reject(key) {
+    db.ref(`reservations/${key}/status`).set("refusé");
+    db.ref(`reservations/${key}/validatedAt`).set(new Date().toISOString());
+
+    alert("Réservation refusée.");
+    loadAll();
+  }
 </script>
 </body>
 </html>
