@@ -57,20 +57,24 @@
     window.location.href = "login.html";
   }
 </script>
-<div class="admin-label">👤 Connecté en tant que <strong id="adminName"></strong> <span id="badge" class="badge">Administrateur</span></div>
+
+<div class="admin-label">👤 Connecté en tant que <strong id="adminName"></strong> <span class="badge">Administrateur</span></div>
 <button class="logout" onclick="logout()">🔓 Se déconnecter</button>
 <h1>🔐 Panneau Admin – Réservations Streamer</h1>
+
 <div class="tabs">
   <button onclick="switchTab('pending')" class="active">📥 Demandes</button>
   <button onclick="switchTab('active')">🎥 Réservation actuelle</button>
   <button onclick="switchTab('history')">📜 Historique</button>
 </div>
+
 <div id="pending" class="tab-content active"></div>
 <div id="active" class="tab-content"></div>
 <div id="history" class="tab-content">
   <div style="text-align: right;"><button class="export" onclick="exportHistory()">📁 Exporter JSON</button></div>
   <div id="historyContent"></div>
 </div>
+
 <script>
   document.getElementById("adminName").textContent = ADMIN_USER || "Inconnu";
 
@@ -88,30 +92,32 @@
 
   function loadPending() {
     const container = document.getElementById("pending");
-    db.ref("reservations").orderByChild("status").equalTo("en_attente").once("value").then(snapshot => {
+    db.ref("reservations").once("value").then(snapshot => {
       const data = snapshot.val();
       container.innerHTML = data ? "" : "<p>Aucune demande en attente.</p>";
 
       if (data) {
         Object.entries(data).forEach(([key, r]) => {
-          const div = document.createElement("div");
-          div.className = "entry";
-          div.innerHTML = `
-            <label>Nom:<input value="${r.name}" onchange="editField('${key}', 'name', this.value)"></label>
-            <label>Description:<textarea onchange="editField('${key}', 'description', this.value)">${r.description || ""}</textarea></label>
-            <label>Twitch:<input value="${r.twitch || ""}" onchange="editField('${key}', 'twitch', this.value)"></label>
-            <label>YouTube ID:<input value="${r.youtube || ""}" onchange="editField('${key}', 'youtube', this.value)"></label>
-            <label>Twitter:<input value="${r.twitter || ""}" onchange="editField('${key}', 'twitter', this.value)"></label>
-            <label>Instagram:<input value="${r.instagram || ""}" onchange="editField('${key}', 'instagram', this.value)"></label>
-            <label>Chaîne YouTube:<input value="${r.youtubeLink || ""}" onchange="editField('${key}', 'youtubeLink', this.value)"></label>
-            <label>Durée (heures):<input type="number" min="1" max="48" value="24" id="duration-${key}"></label>
-            <div class="info">Soumis le ${r.submittedAt ? new Date(r.submittedAt).toLocaleString() : "N/A"}</div>
-            <div class="actions">
-              <button class="approve" onclick="approve('${key}')">✅ Valider</button>
-              <button class="reject" onclick="reject('${key}')">❌ Refuser</button>
-            </div>
-          `;
-          container.appendChild(div);
+          if (!r.status || r.status === "en_attente") {
+            const div = document.createElement("div");
+            div.className = "entry";
+            div.innerHTML = `
+              <label>Nom:<input value="${r.name}" onchange="editField('${key}', 'name', this.value)"></label>
+              <label>Description:<textarea onchange="editField('${key}', 'description', this.value)">${r.description || ""}</textarea></label>
+              <label>Twitch:<input value="${r.twitch || ""}" onchange="editField('${key}', 'twitch', this.value)"></label>
+              <label>YouTube ID:<input value="${r.youtube || ""}" onchange="editField('${key}', 'youtube', this.value)"></label>
+              <label>Twitter:<input value="${r.twitter || ""}" onchange="editField('${key}', 'twitter', this.value)"></label>
+              <label>Instagram:<input value="${r.instagram || ""}" onchange="editField('${key}', 'instagram', this.value)"></label>
+              <label>Chaîne YouTube:<input value="${r.youtubeLink || ""}" onchange="editField('${key}', 'youtubeLink', this.value)"></label>
+              <label>Durée (heures):<input type="number" min="1" max="48" value="24" id="duration-${key}"></label>
+              <div class="info">Soumis le ${r.submittedAt ? new Date(r.submittedAt).toLocaleString() : "N/A"}</div>
+              <div class="actions">
+                <button class="approve" onclick="approve('${key}')">✅ Valider</button>
+                <button class="reject" onclick="reject('${key}')">❌ Refuser</button>
+              </div>
+            `;
+            container.appendChild(div);
+          }
         });
       }
     });
@@ -142,7 +148,6 @@
 
   function cancelActive(key) {
     if (!confirm("Annuler cette réservation ?")) return;
-
     db.ref(`reservations/${key}`).remove();
     alert("Réservation annulée.");
     loadAll();
