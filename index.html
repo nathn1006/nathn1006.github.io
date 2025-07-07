@@ -1,232 +1,102 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Legenda</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>LEGENDA</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      height: 100vh;
+      background: radial-gradient(circle at center, #111 0%, #000 100%);
+      overflow: hidden;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Inter', sans-serif;
+      position: relative;
+    }
+
+    h1 {
+      font-family: 'Cinzel', serif;
+      font-size: 64px;
+      letter-spacing: 4px;
+      margin-bottom: 40px;
+      z-index: 1;
+    }
+
+    .sablier {
+      font-size: 100px;
+      animation: rotation 10s linear infinite;
+      filter: drop-shadow(0 0 10px white);
+      z-index: 1;
+    }
+
+    @keyframes rotation {
+      0% { transform: rotate(0deg); }
+      50% { transform: rotate(180deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Feux d'artifice */
+    .firework {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: white;
+      border-radius: 50%;
+      opacity: 0;
+      animation: explode 3s ease-out infinite;
+    }
+
+    @keyframes explode {
+      0% {
+        transform: scale(0);
+        opacity: 0;
+        top: 50%;
+        left: 50%;
+      }
+      10% {
+        opacity: 1;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 0;
+        top: calc(50% + var(--y));
+        left: calc(50% + var(--x));
+      }
+    }
+
+    audio {
+      display: none;
+    }
+  </style>
 </head>
-<style>
-    /* Réinitialisation des marges et paddings par défaut */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-/* Définir la police principale */
-body {
-    font-family: 'Roboto', sans-serif;
-    background-color: #1E1E1E;  /* Fond sombre pour un effet moderne */
-    color: #F2F2F2;  /* Texte clair pour le contraste */
-    line-height: 1.6;
-    height: 100vh;  /* Utilise toute la hauteur de la fenêtre */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* Container centré avec bordure */
-.container {
-    background-color: #fff;  /* Fond blanc */
-    border-radius: 15px;  /* Bordures arrondies */
-    width: 90%;
-    max-width: 1000px;  /* Limiter la taille maximale */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);  /* Ombre portée pour l'effet 3D */
-    padding: 30px;
-    text-align: center;
-}
-
-/* Header avec navigation sticky */
-header {
-    margin-bottom: 40px;  /* Espacement entre le header et le contenu */
-}
-
-header .logo h1 {
-    font-family: 'Poppins', sans-serif;
-    font-size: 32px;
-    color: #FF6600;  /* Une touche d'orange pour la marque */
-    margin-bottom: 20px;
-}
-
-nav ul {
-    list-style-type: none;
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-}
-
-nav ul li {
-    display: inline-block;
-}
-
-nav ul li a {
-    text-decoration: none;
-    font-size: 18px;
-    color: #333;  /* Couleur sombre pour les liens */
-    padding: 12px 24px;
-    border-radius: 5px;
-    transition: background-color 0.3s, transform 0.3s;
-}
-
-nav ul li a:hover {
-    background-color: #FF6600;  /* Orange clair au survol */
-    color: #fff;
-    transform: scale(1.05);  /* Effet de zoom sur le lien */
-}
-
-/* Section principale */
-.main-section {
-    margin-bottom: 40px;
-}
-
-.main-section h2 {
-    font-size: 36px;
-    margin-bottom: 20px;
-    font-family: 'Poppins', sans-serif;
-    color: #111;
-}
-
-.main-section p {
-    font-size: 20px;
-    margin-bottom: 40px;
-    color: #111;
-}
-
-/* Conteneur des boutons */
-.btn-container {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-}
-
-.btn {
-    background-color: #FF6600;
-    color: white;
-    padding: 15px 10px;
-    border-radius: 5px;
-    text-decoration: none;
-    font-size: 18px;
-    transition: background-color 0.3s, transform 0.3s;
-}
-
-.btn:hover {
-    background-color: #FF8000;
-    transform: scale(1.05);
-}
-
-/* Footer */
-footer {
-    text-align: center;
-    background-color: #111;
-    color: #aaa;
-    padding: 20px 0;
-    font-size: 14px;
-}
-
-footer p {
-    margin: 0;
-}
-
-/* Mobile Responsive Design */
-@media (max-width: 768px) {
-    .container {
-        width: 95%;  /* Réduire la largeur du conteneur pour les petits écrans */
-    }
-
-    header .logo h1 {
-        font-size: 28px;
-    }
-
-    nav ul {
-        flex-direction: column;
-    }
-
-    nav ul li {
-        margin-bottom: 10px;
-    }
-
-    .main-section h2 {
-        font-size: 28px;
-    }
-
-    .main-section p {
-        font-size: 18px;
-    }
-
-    .btn {
-        padding: 12px 24px;
-    }
-}
-/* Mobile Responsive Design */
-@media (max-width: 768px) {
-    .container {
-        width: 95%;  /* Réduire la largeur du conteneur pour les petits écrans */
-    }
-
-    header .logo h1 {
-        font-size: 28px;
-    }
-
-    #countdown {
-        font-size: 40px;
-    }
-}
-    .social-icons {
-    margin-top: 15px;
-}
-
-.social-icons a {
-    margin: 0 10px;
-    transition: transform 0.3s;
-}
-
-.social-icons a:hover {
-    transform: scale(1.2);
-}
-</style>
 <body>
-
-    <!-- Section principale avec un conteneur centré -->
-    <div class="container">
-        <!-- Header avec navigation sticky -->
-        <header>
-            <div class="logo">
-                <h1>Legenda</h1>
-            </div>
-            <nav>
-                <ul>
-                   <!-- <li><a href="projet1.html">Projet 1</a></li> -->
-                </ul>
-            </nav>
-        </header>
-
-        <!-- Section principale du contenu -->
-        <section class="main-section">
-            <h2>Bienvenue sur Le site de LEGENDA</h2>
-            <p>Découvrez ici touts les projets actif de notre serveur.</p>
-            <div class="btn-container">
-                <a href="../BO6/index.html" class="btn">Black Ops 6 Zombie</a>
-                <a href="../BO7/index.html" class="btn">Black Ops 7 Zombie</a>
-                <a href="../Game/index.html" class="btn">Jeux Connectées</a>
-                <a href="../24h/index.html" class="btn">Réseau</a>
-            </div>
-        </section>
-
-        <!-- Footer -->
-        <footer>
-            <p>© 2025 Legenda - Tous droits réservés</p>
-            <div class="social-icons">
-        <a href="https://www.twitch.tv/nathn1006" target="_blank" title="Twitch">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/d/d3/Twitch_Glitch_Logo_Purple.svg" alt="Twitch" width="30" />
-        </a>
-        <a href="https://discord.gg/YAqm9VmKGH" target="_blank" title="Discord">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/4/48/Discord_Logo_SVG.svg" alt="Discord" width="30" />
-        </a>
-    </div>
-</footer>
-        </footer>
-    </div>
-
+  <h1>LEGENDA</h1>
+  <div class="sablier">⏳</div>
+  <!-- Génération de 30 petits éclats -->
+  <script>
+    for (let i = 0; i < 30; i++) {
+      const fw = document.createElement('div');
+      fw.className = 'firework';
+      const angle = Math.random() * 360;
+      const distance = Math.random() * 300;
+      const x = Math.cos(angle) * distance + 'px';
+      const y = Math.sin(angle) * distance + 'px';
+      fw.style.setProperty('--x', x);
+      fw.style.setProperty('--y', y);
+      fw.style.animationDelay = (Math.random() * 5) + 's';
+      document.body.appendChild(fw);
+    }
+  </script>
 </body>
 </html>
